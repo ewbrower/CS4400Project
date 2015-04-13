@@ -33,6 +33,7 @@ class Accessor:
     def createAccount(self, user, password):
         db = self.db.cursor()
         # does this user already exist? if not, then create an account
+        # doesnt actually look yet
         userExist = self.verify(user, "User")
         if (not userExist):
             db.execute(
@@ -51,30 +52,51 @@ class Accessor:
         profileExist = self.verify(user, "Student_Faculty")
         # so if there is a user, but no profile yet
         if (userExist and not profileExist):
-            # need a lot more value verifying here !!!!!!
-            db.execute(
-                "INSERT INTO Student_Faculty VALUES "
-                + "(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
-                (str(user), str(fname), str(lname), str(dob), str(debarred), str(gender), str(email), str(address),
-                    str(faculty), str(penalty), str(dept)))
+            #TODO: need a lot more value verifying here !!!!!!
+            sql = 'INSERT INTO Student_Faculty VALUES("%s", "%s", "%s",'\
+                '"%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s")'\
+                %(user, fname, lname, dob, debarred, gender, email, address,
+                faculty, penalty, dept)
+            # execute
+            db.execute(sql)
             return True
         return False
 
 
-    def search(self, ISBN = None, publisher = None, title = None,
+    def search(self, ISBN = None, title = None, publisher = None,
         edition = None, author = None):
+        # v this is really hackish, do not replicate
+        terms = locals()
+        terms.pop("self", None)
+        # grab yo database
         db = self.db.cursor()
-        # if author !None, then search the Author database first
+        # if author !None, then search the Author database only and return
         if author != None and ISBN != None:
-            sql = "SELECT * FROM Author WHERE ISBN = %s AND author = %s"
+            sql = 'SELECT * FROM Author WHERE ISBN = %s AND author = %s'
             db.execute(sql, (ISBN, author))
             return db
-        else:
-            return False
+        # otherwise, construct the SQL statement
+        first = True
+        sql = "SELECT * FROM Book WHERE "
+        for param in terms:
+            if terms[param] is not None:
+                if first:
+                    sql += '%s = "%s" '%(param, terms[param])
+                    first = False
+                else:
+                    sql += 'AND %s = "%s" '%(param, terms[param])
+        print(sql)
+        # and execute
+        db.execute(sql)
+        return db
 
     def selectBook(self, ISBN, copy = -1):
         #if copy = -1, then copy number doesn't matter
-        pass
+        db = self.db.cursor()
+        sql = 'SELECT * FROM Book_Copy WHERE ISBN = "%s"'%ISBN
+        if copy is not -1:
+            sql += ' AND copy_num = "%s"'%copy
+        db.execute(sql)
 
     def submitRequest(self):
         pass
@@ -159,14 +181,14 @@ dis = Accessor()
 # for item in res:
 #     print(item)
 
-# success = dis.createAccount("ewbrower","hunter8")
-##
-# success = dis.createProfile("ewbrower","Eric", "Brower", "19940702", False,
+# success = dis.createAccount("demo2","hunter8")
+# ##
+# success = dis.createProfile("demo2","Derrick", "Brower", "19940702", False,
 #     "M", "ewbrower@gatech.edu", "182", False, 0, None)
-success = dis.search("100",None,None,None,"Bilbo")
+# print(success)
+# success = dis.search(123456789012,"abc",None,None,None)
 
-
-
+success = dis.selectBook(123456789012)
 
 print(success)
 
