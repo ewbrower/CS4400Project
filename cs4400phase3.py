@@ -3,11 +3,13 @@ from tkinter import ttk
 import pymysql
 import urllib.request
 from urllib import *
+from access import Accessor
 
 class Library:
 
     def __init__(self,win):
         self.LoginPage(win)
+        self.a=Accessor()
 
     def LoginPage(self,win): #LoginPage(1)
         self.Login=win
@@ -21,12 +23,12 @@ class Library:
         Label(f2, text='Username').grid(row=0, column=0, sticky=E)
         Label(f2, text='Password').grid(row=1, column=0, sticky=E)
 
-        self.sv=StringVar()
-        self.sv1=StringVar()
+        self.Username=StringVar()
+        self.Psw=StringVar()
 
-        e1=Entry(f2, textvariable=self.sv)
+        e1=Entry(f2, textvariable=self.Username)
         e1.grid(row=0,column=1,columnspan=3,ipadx=30)
-        e2=Entry(f2, textvariable=self.sv1)
+        e2=Entry(f2, textvariable=self.Psw)
         e2.grid(row=1,column=1,columnspan=3,ipadx=30)
 
         b1=Button(f2, text='Create Account', command=self.Register)
@@ -34,12 +36,21 @@ class Library:
         b2=Button(f2,text='Login', command=self.LoginCheck)
         b2.grid(row=2,column=2, sticky=EW)
 
+    def LoginCheck(self): #checking if information matches with database after hitting login(1)
+        User=self.Username.get()
+        Psw=self.Psw.get()
+        if self.a.login(User,Psw)==True:
+            messagebox.showinfo('Success','You have logged in successfully.')
+            self.SearchBooks()
+        else:
+            messagebox.showerror('Error','You have entered an unrecognizable username/password combination.')
+          
     def Register(self): #NewRegistration(2)
         self.Login.withdraw()
         self.Register=Toplevel()
         self.Register.title('New User Registration')
 
-        Label(self.Register, text='UserName').grid(row=2,column=0,sticky=W)
+        Label(self.Register, text='Username').grid(row=2,column=0,sticky=W)
         Label(self.Register, text='Password').grid(row=3,column=0,sticky=W)
         Label(self.Register, text='Confirm Password').grid(row=4,column=0,sticky=W)
 
@@ -54,82 +65,28 @@ class Library:
         e4=Entry(self.Register, textvariable=self.CP)
         e4.grid(row=4,column=1, ipadx=30)
 
-
         b2=Button(self.Register, text='Register', command=self.RegisterNew)
         b2.grid(row=6,column=2)
 
-
-    def Connect(self):
-        try:
-            db = pymysql.connect(db='cs2316db', user='varinthorn3',passwd='jdTG1bLO',host='academic-mysql.cc.gatech.edu')
-            return(db)
-        except:
-            messagebox.showerror('Error','Check internet connection!')
-
-            
-    def LoginCheck(self): #checking if information matches with database after hitting login(1)
-        db =self.Connect()
-        u=self.sv.get()
-        p=self.sv1.get()
-        sql='SELECT * FROM ReservationUser WHERE Username=%s AND Password = %s'
-        c=db.cursor()
-        name = c.execute(sql,(u,p))
-        if name == 0:
-            messagebox.showerror('Error','You have entered an unrecognizable username/password combination.')
+    def RegisterNew(self):
+        U=self.U.get()
+        P=self.P.get()
+        CP=self.CP.get()
+        if P!=CP:
+            messagebox.showerror('Error','Passwords does not match')
+        elif P =='' or CP =='' or U=='':
+            messagebox.showerror('Error','Please enter all information')
         else:
-            messagebox.showinfo('Success','You have logged in successfully.')
-            self.SearchBooks()
-
-    def RegisterNew(self): #checking if information matches with database after hitting submit(2)
-        usern=self.U.get()
-        usern=str(usern)
-        psw1=self.P.get()
-        psw2=self.CP.get()
-        lastname=self.LN.get()
-        l=0
-        u=0
-        a=0
-        while a==0:
-            if psw1!=psw2:
-                messagebox.showerror('Error','Passwords does not match.')
-                a+=1
-            elif usern=='':
-                messagebox.showerror('Error','Please enter username.')
-                a+=1
-            elif psw1 == '':
-                messagebox.showerror('Error','Please enter password.')
-                a+=1
-            elif psw2=='':
-                messagebox.showerror('Error','Please confirm password.')
-                a+=1
-            else:
-                for i in psw1:
-                    import string
-                    if i in string.ascii_uppercase:
-                        l+=1
-                    if i in ['0','1','2','3','4','5','6','7','8','9']:
-                        u+=1
-                if l==0 or u==0:
-                    messagebox.showerror('Error','Please enter password with at least one number and one uppercase letter.')
-                    a+=1
-            a+=2
-        db=self.Connect()
-        sql='SELECT * FROM ReservationUser WHERE Username=%s'
-        c=db.cursor()
-        name = c.execute(sql,usern)
-        if a==2:
-            if name != 0:
-                    messagebox.showerror('Error', 'Username already exists, please do not use it.')
-            else:
-                sql='INSERT INTO ReservationUser (Username,Password,LastName) VALUE(%s,%s,%s)'
-                c.execute(sql, (usern,psw1,lastname))
-                db.commit()
+            if self.a.createAccount(U,P)==True:
+                messagebox.showinfo('Success','You have registered successfully')
                 self.MakeProfile()
-                messagebox.showinfo('Success','You are now registered.')
+            else:
+                messagebox.showerror('Error','Username already exists')
+      
                 
     def MakeProfile(self): #making new profile (3)
-        self.Login.withdraw()
-        self.makeProfile=TopLevel()
+        self.Register.withdraw()
+        self.makeProfile=Toplevel()
         self.makeProfile.title('Create Profile')
 
         self.FN=StringVar()
@@ -165,7 +122,7 @@ class Library:
         r=Radiobutton(self.makeProfile, text='Yes',variable=self.FACULTY,command=self.department)
         r.grid(row=6,column=5, ipadx=30)
         
-        b2=Button(self.makeProfile, text='Submit')
+        b2=Button(self.makeProfile, text='Submit', command=self.Create)
         b2.grid(row=10,column=5)
 
     def department(self):
@@ -173,10 +130,29 @@ class Library:
         dep=OptionMenu(self.makeProfile,self.DEPARTMENT, 'Chemistry','Math')
         dep.grid(row=8,column=5)
 
-    def RegisterNew(self):
-        pass
-        #submit SQL into database
-
+    def Create(self):
+        U=self.U.get()
+        P=self.P.get()
+        FN=self.FN.get()
+        DOB=self.DOB.get()
+        EMAIL=self.EMAIL.get()
+        ADDRESS=self.ADDRESS.get()
+        LN=self.LN.get()
+        GENDER=self.GENDER.get()
+        FACULTY=self.FACULTY.get()
+        DEPARTMENT=self.DEPARTMENT.get()
+        if FACULTY != 'Yes':
+            DEPARTMENT='NULL'
+        if self.a.createProfile(U,FN,LN,DOB,'No',GENDER,EMAIL,ADDRESS,FACULTY, '0.00',DEPARTMENT)==True:
+            messagebox.showinfo('Success','Profile created')
+            self.BackToLogin()
+        else:
+            messagebox.showerror('Error','Please fill in profile again')
+            
+    def BackToLogin(self):
+        self.makeProfile.withdraw()
+        self.Login.deiconify()
+        
     def SearchBooks(self):
         self.Login.withdraw()
         self.Search=Toplevel()
@@ -359,4 +335,3 @@ class Library:
 win=Tk()
 w=Library(win)
 win.mainloop()
-
