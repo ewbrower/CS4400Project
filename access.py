@@ -55,6 +55,7 @@ class Accessor:
 
     def search(self, ISBN = None, title = None, publisher = None,
         edition = None, author = None):
+        #TODO: cut it down to ISBN author title
         # v this is really hackish, do not replicate
         terms = locals()
         terms.pop("self", None)
@@ -106,7 +107,10 @@ class Accessor:
 
     def submitDamagedBook(self, ISBN, copy):
         # fine here?
-        pass
+        # get price of the book
+        costSQL = 'SELECT cost FROM Book WHERE ISBN = "%s"'%ISBN
+        cost = self.query(costSQL)[0][0]
+        print(cost)
 
     def submitLostBook(self, ISBN, copy):
         # delete from database?
@@ -161,15 +165,12 @@ class Accessor:
             return False
 
     def availableBook(self, ISBN):
-        db = self.db.cursor()
         sql = 'SELECT checked_out FROM Book_Copy WHERE ISBN = "%s"' %ISBN
-        db.execute(sql)
-        print(db.rowcount)
-        print(sql)
-        if db.rowcount == 0:
+        res = self.query(sql)
+        if len(res) == 0:
             return False
         else:
-            return db
+            return res
 
     def query(self, sql):
         db = self.db.cursor()
@@ -219,6 +220,13 @@ dis = Accessor()
 
 # resp = dis.selectBook('123456789012')
 # print(resp) # returns copy tuples (only one in this case)
+
+# resp = dis.locateBook(123456789012)
+# print(resp) # returns floor, subject, aisle, shelf (or something)
+
+
+dis.submitDamagedBook("0-136-08620-9",1)
+
 
 
 
