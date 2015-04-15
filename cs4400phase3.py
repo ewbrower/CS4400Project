@@ -4,6 +4,7 @@ import pymysql
 import urllib.request
 from urllib import *
 from access import Accessor
+import datetime
 
 class Library:
 
@@ -13,11 +14,11 @@ class Library:
 
     def LoginPage(self,win): #LoginPage(1)
         self.Login=win
-        self.Login.title('Login')
+        self.Login.wm_title('Login')
         f1=Frame(self.Login)
-        f1.pack(expand=True)
+        f1.grid(column=1, row=1)
         f2=Frame(self.Login)
-        f2.pack(expand=True)
+        f2.grid(column=1, row=2)
 
         Label(f2, text='Username').grid(row=0, column=0, sticky=E)
         Label(f2, text='Password').grid(row=1, column=0, sticky=E)
@@ -50,7 +51,7 @@ class Library:
     def Register(self): #NewRegistration(2)
         self.Login.withdraw()
         self.Register=Toplevel()
-        self.Register.title('New User Registration')
+        self.Register.wm_title('New User Registration')
 
         Label(self.Register, text='Username').grid(row=2,column=0,sticky=W)
         Label(self.Register, text='Password').grid(row=3,column=0,sticky=W)
@@ -89,7 +90,7 @@ class Library:
     def MakeProfile(self): #making new profile (3)
         self.Register.withdraw()
         self.makeProfile=Toplevel()
-        self.makeProfile.title('Create Profile')
+        self.makeProfile.wm_title('Create Profile')
 
         f1=Frame(self.makeProfile)
         f1.grid(row=4,column=1, columnspan=3)
@@ -100,8 +101,8 @@ class Library:
         self.EMAIL=StringVar()
         self.ADDRESS=StringVar()
         self.LN=StringVar()
-        self.GENDER=StringVar() #drop down?
-        self.FACULTY=IntVar() #radiobutton
+        self.GENDER=StringVar() 
+        self.FACULTY=IntVar() 
         self.DEPARTMENT=StringVar()
 
         Label(self.makeProfile, text ='First Name').grid(row=2, column = 1, sticky=E)
@@ -117,7 +118,7 @@ class Library:
         e1=Entry(self.makeProfile, textvariable=self.FN)
         e1.grid(row=2,column=2, ipadx=30)
         mon=Entry(f1, textvariable=self.month)
-        mon.grid(row=1,column=2,ipadx=5)
+        mon.grid(row=1,column=2,ipadx=5)###something is still wrong here
         day=Entry(f1, textvariable=self.day)
         day.grid(row=1,column=4, ipadx=5)
         year=Entry(f1, textvariable=self.year)
@@ -171,7 +172,7 @@ class Library:
     def SearchBooks(self):
         self.Login.withdraw()
         self.Search=Toplevel()
-        self.Search.title=('Search Books')
+        self.Search.wm_title('Search Books')
 
         self.ISBN=StringVar()
         self.Title=StringVar()
@@ -190,7 +191,7 @@ class Library:
 
         b1=Button(self.Search, text='Back',command = self.goBacktoLogin)
         b1.grid(row=8, column=2)
-        b1=Button(self.Search, text='Search',command = self.Search)
+        b1=Button(self.Search, text='Search',command = self.search)
         b1.grid(row=8, column=4)
         b1=Button(self.Search, text='Close',command = self.close)
         b1.grid(row=8, column=6)
@@ -202,30 +203,40 @@ class Library:
     def close(self):
         self.Login.destroy()
 
-    def Search(self):
+    def search(self):
         ISBN=self.ISBN.get()
         TITLE=self.Title.get()
         AUTHOR=self.Author.get()
+        if ISBN =='':
+            ISBN=None
+        if TITLE=='':
+            TITLE=None
+        if AUTHOR=='':
+            AUTHOR=None
 
         data=self.a.search(ISBN, TITLE, AUTHOR)
-        aList = data.fetchall()
-        print(aList)
+        newlist=[]
+        for i in data:
+            newlist.append([i[0],i[1],i[3],0])
+        self.RequestHold(newlist)
         
-    def RequestHold(self): #####################FIX THE BORDERS
+    def RequestHold(self, data): #####################FIX GUI
         self.Search.withdraw()
-        self.holdRequest=TopLevel()
-        self.holdRequest.title=('Hold Request for a Book')
+        self.holdRequest=Toplevel()
+        self.holdRequest.wm_title('Hold Request for a Book')
 
         Label(self.holdRequest, text='Books Available Summary').grid(row=1, column=1, sticky=W)
-        frame=Frame(borderwidth=2, relief=RIDGE)
+        frame=Frame(self.holdRequest,borderwidth=2, background='black')
         frame.grid(row=2,column=1, columnspan=6)
-        Label(frame, text='Select',bd=1, relief=RIDGE).grid(row=1,column=1,sticky=E+W)
-        Label(frame, text='ISBN',bd=1, relief=RIDGE).grid(row=1,column=2,sticky=E+W)
-        Label(frame, text='Title of the Book',bd=1, relief=RIDGE).grid(row=1,column=3,sticky=E+W)
-        Label(frame, text='Edition',bd=1, relief=RIDGE).grid(row=1,column=4,sticky=E+W)
-        Label(frame, text='# copies available',bd=1, relief=RIDGE).grid(row=1,column=5,sticky=E+W)
+        Label(frame, text='Select',width=5).grid(row=1,column=1,sticky=E+W,ipadx=1)
+        Label(frame, text='ISBN',width=10).grid(row=1,column=2,sticky=E+W, ipadx=1)
+        Label(frame, text='Title of the Book',width=40).grid(row=1,column=3,sticky=E+W,ipadx=1)
+        Label(frame, text='Edition',width=5).grid(row=1,column=4,sticky=E+W,ipadx=1)
+        Label(frame, text='# copies available',width=10).grid(row=1,column=5,sticky=E+W, ipadx=1)
 
-        self.BooksFound=[['isbn','title','edition','copies'],['','','','']]
+        self.BooksFound=data
+        print(len(self.BooksFound))
+        print(data)
         self.selected=[]
         self.var=StringVar()
         i=0
@@ -233,16 +244,17 @@ class Library:
             self.r=Radiobutton(frame, variable=self.var, value=self.BooksFound[i])
             self.r.deselect()
             self.r.grid(row=i+2,column=1)
-            
-            Label(frame,text=self.BooksFound[i][0],bd=1, relief=RIDGE).grid(row=i+2,column=2)
-            Label(frame,text=self.BooksFound[i][1],bd=1, relief=RIDGE).grid(row=i+2,column=3)
-            Label(frame,text=self.BooksFound[i][2],bd=1, relief=RIDGE).grid(row=i+2,column=4)
-            Label(frame,text=self.BooksFound[i][3],bd=1, relief=RIDGE).grid(row=i+2,column=5)
+            Label(frame,text=self.BooksFound[i][0],width=10).grid(row=i+2,column=2, ipadx=1)
+            Label(frame,text=self.BooksFound[i][1],width=40).grid(row=i+2,column=3, ipadx=1)
+            Label(frame,text=self.BooksFound[i][2],width=5).grid(row=i+2,column=4, ipadx=1)
+            Label(frame,text=self.BooksFound[i][3],width=5).grid(row=i+2,column=5, ipadx=1)
             i+=1
-        frame2=Frame()
+        frame2=Frame(self.holdRequest)
         frame2.grid(row=3,column=1,columnspan=6)
         Label(frame2,text='Hold Request Date').pack(side=LEFT)
         holddate=StringVar()
+        date=datetime.datetime.now().strftime('%m')+'/'+datetime.datetime.now().strftime('%d')+'/'+datetime.datetime.now().strftime('%Y')
+        holddate.set(date)
         e1=Entry(frame2,textvariable=holddate,state='readonly')
         e1.pack(side=LEFT)
         returndate=StringVar()
@@ -250,16 +262,16 @@ class Library:
         e1.pack(side=RIGHT)
         Label(frame2,text='Estimated Return Date').pack(side=RIGHT)
 
-        Button(self.holdRequest,text='Back').grid(row=4,column=3)
-        Button(self.holdRequest,text='Submit').grid(row=4,column=4)
-        Button(self.holdRequest,text='Close').grid(row=4,column=5)
+        Button(self.holdRequest,text='Back', command=self.returntoSearch).grid(row=4,column=3)
+        Button(self.holdRequest,text='Submit', command=self.holdrequest).grid(row=4,column=4)
+        Button(self.holdRequest,text='Close', command=self.close).grid(row=4,column=5)
 
         ttk.Separator(self.holdRequest, orient=HORIZONTAL).grid(row=5,column=0,columnspan=6, sticky=E+W)
 
         Label(self.holdRequest,text='Books on Reserve').grid(row=6,column=1,sticky=W)
         self.BooksReserved=self.BooksFound
         a=0
-        frame3=Frame(borderwidth=2, relief=RIDGE,bg='grey')
+        frame3=Frame(self.holdRequest,borderwidth=2, relief=RIDGE,bg='grey')
         frame3.grid(row=7,column=1, columnspan=6)
         Label(frame3, text='ISBN',bd=1, relief=RIDGE,bg='grey').grid(row=1,column=1,sticky=E+W)
         Label(frame3, text='Title of the Book',bd=1, relief=RIDGE,bg='grey').grid(row=1,column=2,sticky=E+W)
@@ -272,6 +284,14 @@ class Library:
             Label(frame3,text=self.BooksReserved[a][2],bd=1, relief=RIDGE,bg='grey').grid(row=a+2,column=3)
             Label(frame3,text=self.BooksReserved[a][3],bd=1, relief=RIDGE,bg='grey').grid(row=a+2,column=4)
             a+=1
+
+    def returntoSearch(self):
+        self.holdRequest.withdraw()
+        self.Search.deiconify()
+
+
+    def holdrequest(self):
+        request=self.var
 
     def RequestExtension(self): 
         self.RequestExtension=Toplevel()
@@ -336,7 +356,7 @@ class Library:
 
     def TrackLocation(self):
         self.locate=TopLevel()
-        self.locate.title=('Track Book Location')
+        self.locate.title('Track Book Location')
 
         Label(self.locate,text='ISBN').grid(row=1,column=1)
         isbn=StringVar()
