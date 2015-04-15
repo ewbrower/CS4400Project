@@ -53,7 +53,8 @@ class Accessor:
         return False
 
 
-    def search(self, ISBN = None, title = None, author = None):
+    def search(self, ISBN = None, title = None, author = None,
+            publisher = None, edition = None):
         #TODO: cut it down to ISBN author title
         # v this is really hackish, do not replicate
         terms = locals()
@@ -103,7 +104,7 @@ class Accessor:
             'FROM Book b WHERE ISBN = "%s"'%ISBN
         return self.query(sql)
 
-    def checkoutBook(self, ISBN, copy):
+    def checkoutBook(self, user, ISBN, copy):
         pass
 
     def returnBook(self, user, ISBN, copy = -1):
@@ -113,26 +114,34 @@ class Accessor:
         # then go get the fine
         pass
 
+    # might want to consolidate damaged and lost
     def submitDamagedBook(self, user, ISBN, copy):
-        # fine here?
+        return self.brokenBook(user, ISBN, copy, True)
+
+    def submitLostBook(self, user, ISBN, copy):
+        return self.brokenBook(user, ISBN, copy, False)
+
+    def brokenBook(self, user, ISBN, copy, damaged):
         # get price of the book
         costSQL = 'SELECT cost FROM Book WHERE ISBN = "%s"'%ISBN
         cost = self.query(costSQL)[0][0]
-        print(cost)
-        # get penalty
-        penalty = 'SELECT penalty FROM User WHERE user = "%s"'%user
-        # add cost to the user's penalty
-
+        # get current penalty
+        penaltySQL = 'SELECT penalty FROM Student_Faculty WHERE username = "%s"'%user
+        penalty = self.query(penaltySQL)[0][0]
+        # print(penalty, type(penalty))
+        # additional = str(float(penalty) + cost)
+        # print(additional)
+        # solve for new penalty, convert to string
+        if damaged:
+            newPen = str(float(penalty) + float(cost) * 0.5)
+        else:
+            newPen = str(float(penalty) + float(cost))
         penaltySQL = 'UPDATE User SET penalty = "%s" '\
-            'WHERE user = "%s"'%(penalty,user)
+            'WHERE user = "%s"'%(newPen, user)
         # get specific copy of book and do shit to it
-        damSQL = 'UPDATE Book_Copy SET damaged = "TRUE" '\
+        sql = 'UPDATE Book_Copy SET damaged = 1 '\
             'WHERE ISBN = "%s" AND copy_num = "%s"'%(ISBN,copy)
-        return True
-
-    def submitLostBook(self, ISBN, copy):
-        # delete from database?
-        pass
+        return self.query(sql)
 
 ############## REPORTS ###############
 
@@ -243,11 +252,11 @@ dis = Accessor()
 # print(resp) # returns floor, subject, aisle, shelf (or something)
 
 
-# res = dis.submitDamagedBook("ewbrower","0-136-08620-9",1)
-# print(res)
-
-res = dis.getCopies("0-136-08620-9")
+res = dis.submitDamagedBook("ewbrower","0-136-08620-9",1)
 print(res)
+
+# res = dis.getCopies("0-136-08620-9")
+# print(res)
 
 
 
