@@ -1,5 +1,5 @@
 import pymysql
-from tkinter import messagebox
+from decimal import Decimal
 
 host = "academic-mysql.cc.gatech.edu"
 username = "cs4400_Group_33"
@@ -13,99 +13,86 @@ class Accessor:
                 host = "academic-mysql.cc.gatech.edu",
                 passwd = "3RMYn5Tp",
                 user = "cs4400_Group_33",
-                db="cs4400_Group_33")
+                db = "cs4400_Group_33",
+                charset = "utf8")
         except:
             messagebox.showwarning("Error","Unable to connect to database!")
             raise
         self.db = db
 
     def login(self, user, password):
-        db = self.db.cursor()
-        db.execute(
-            "SELECT * FROM User WHERE USERNAME = %s AND Password = %s",
-            (username,password))
-        # now check if the username and password are correct
-        if db.rowcount == 1:
+        sql = 'SELECT * FROM User WHERE USERNAME = "%s" AND Password = "%s"'%(user,password)
+        resp = self.query(sql)
+        if len(resp) == 1:
             return True
         else:
             return False
 
     def createAccount(self, user, password):
-        db = self.db.cursor()
-        # does this user already exist? if not, then create an account
-        # doesnt actually look yet
+        sql = 'INSERT INTO User VALUES ("%s", "%s")'%(user, password)
+        #check if the account already exists exist
         userExist = self.verify(user, "User")
-        if (not userExist):
-            db.execute(
-                "INSERT INTO User VALUES (%s, %s)",
-                (user, password))
+        if not userExist:
+            resp = self.query(sql)
             return True
-        #returns false if failed
-        else:
-            return False
+        return False
 
     def createProfile(self, user, fname, lname, dob, debarred, gender,
         email, address, faculty, penalty, dept):
-        db = self.db.cursor()
+        sql = 'INSERT INTO Student_Faculty VALUES("%s", "%s", "%s",'\
+                '"%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s")'\
+                %(user, fname, lname, dob, debarred, gender, email, address,
+                faculty, penalty, dept)
         # check if exists in User table
         userExist = self.verify(user, "User")
         profileExist = self.verify(user, "Student_Faculty")
         # so if there is a user, but no profile yet
         if (userExist and not profileExist):
-            #TODO: need a lot more value verifying here !!!!!!
-            sql = 'INSERT INTO Student_Faculty VALUES("%s", "%s", "%s",'\
-                '"%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s")'\
-                %(user, fname, lname, dob, debarred, gender, email, address,
-                faculty, penalty, dept)
-            # execute
-            db.execute(sql)
+            self.query(sql)
             return True
         return False
 
 
-    def search(self, ISBN = None, title = None, publisher = None,
-        edition = None, author = None):
+    def search(self, ISBN = None, title = None, author = None):
+        #TODO: cut it down to ISBN author title
         # v this is really hackish, do not replicate
         terms = locals()
         terms.pop("self", None)
-        # grab yo database
-        db = self.db.cursor()
         # if author !None, then search the Author database only and return
         if author != None and ISBN != None:
-            sql = 'SELECT * FROM Author WHERE ISBN = %s AND author = %s'
-            db.execute(sql, (ISBN, author))
-            return db
+            sql = 'SELECT * FROM Author WHERE ISBN = %s AND author = %s'%(ISBN, author)
+            resp = self.query(sql, (ISBN, author))
+            return resp
         # otherwise, construct the SQL statement
         first = True
-        sql = "SELECT * FROM Book WHERE "
+        sql = "SELECT * FROM Book "
         for param in terms:
             if terms[param] is not None:
                 if first:
-                    sql += '%s = "%s" '%(param, terms[param])
+                    sql += 'WHERE %s = "%s" '%(param, terms[param])
                     first = False
                 else:
                     sql += 'AND %s = "%s" '%(param, terms[param])
-        print(sql)
         # and execute
-        db.execute(sql)
-        return db
+        resp = self.query(sql)
+        return resp
 
     def selectBook(self, ISBN, copy = -1):
         #if copy = -1, then copy number doesn't matter
-        db = self.db.cursor()
         sql = 'SELECT * FROM Book_Copy WHERE ISBN = "%s"'%ISBN
         if copy is not -1:
             sql += ' AND copy_num = "%s"'%copy
-        db.execute(sql)
+        return self.query(sql)
 
-    def submitRequest(self):
-        pass
-
-    def getBookDetails(self, ISBN):
+    def submitRequest(self, ISBN):
         pass
 
     def locateBook(self, ISBN):
-        pass
+        sql = 'SELECT shelf, subject, '\
+            '(SELECT aisle FROM Shelf s WHERE s.shelf=b.shelf),'\
+            '(SELECT floor FROM Subject u WHERE u.name=b.subject) '\
+            'FROM Book b WHERE ISBN = "%s"'%ISBN
+        return self.query(sql)
 
     def checkoutBook(self, ISBN, copy):
         pass
@@ -119,7 +106,10 @@ class Accessor:
 
     def submitDamagedBook(self, ISBN, copy):
         # fine here?
-        pass
+        # get price of the book
+        costSQL = 'SELECT cost FROM Book WHERE ISBN = "%s"'%ISBN
+        cost = self.query(costSQL)[0][0]
+        print(cost)
 
     def submitLostBook(self, ISBN, copy):
         # delete from database?
@@ -147,7 +137,7 @@ class Accessor:
         pass
 
     def popularSubjectReport(self):
-        # populat subject
+        # popular subject
         pass
 
 ######################## HELPER CODE ##########################
@@ -157,40 +147,88 @@ class Accessor:
 
     def alltabs(self, table):
         db = self.db.cursor()
-        sql = "SELECT * FROM %s" %table
+        sql = 'SELECT * FROM %s' %table
         db.execute(sql)
         return db
 
     def verify(self, user, table = "User"):
-        db = self.db.cursor()
         # you have to insert tables first
-        sql = "SELECT * FROM %s WHERE USERNAME = %%s" %table
+        sql = 'SELECT * FROM %s WHERE USERNAME = "%s"' %(table, user)
         # MySQL evaluates backwards, so let pymysql figure out the
         # other variables how it wants to
-        db.execute(sql, (user))
+        res = self.query(sql)
         # if there is one result, the user already exists in the table
-        if db.rowcount == 1:
+        if len(res) == 1:
             return True
         else:
             return False
 
+    def availableBook(self, ISBN):
+        sql = 'SELECT checked_out FROM Book_Copy WHERE ISBN = "%s"' %ISBN
+        res = self.query(sql)
+        if len(res) == 0:
+            return False
+        else:
+            return res
+
+    def query(self, sql):
+        db = self.db.cursor()
+        resp = []
+        db.execute(sql)
+        resp = self.clean(db.fetchall())
+        return resp
+
+    def clean(self, mess):
+        resp = []
+        if isinstance(mess, tuple):
+            for item in mess:
+                resp.append(self.clean(item))
+        else:
+            # this is incredibly hackish!!!
+            # and not extensible either
+            if type(mess) is bytes:
+                if mess.decode() == '\x00':
+                    return False
+                else:
+                    return True
+            elif type(mess) is Decimal:
+                return float(mess)
+            return mess
+        return resp
+
+
 
 dis = Accessor()
-# print(dis.alltabs("User"))
-# res = dis.alltabs("User")
-# for item in res:
-#     print(item)
 
-# success = dis.createAccount("demo2","hunter8")
-# ##
-# success = dis.createProfile("demo2","Derrick", "Brower", "19940702", False,
-#     "M", "ewbrower@gatech.edu", "182", False, 0, None)
-# print(success)
-# success = dis.search(123456789012,"abc",None,None,None)
+# success = dis.login("dip","hunter8") 
+# print(success) # FALSE
+# success = dis.createAccount("dip","hunter8")
+# print(success) # TRUE
+# success = dis.login("dip","hunter8")
+# print(success) # TRUE
 
-success = dis.selectBook(123456789012)
+# ver = dis.verify("diplo")
+# print(ver) # TRUE
 
-print(success)
+# success = dis.createProfile("diplo", "nomen", "lomen", "12", False, 'F', "dip@di",
+#     "122", False, 0, "music")
+# print(success) # TRUE
+
+# resp = dis.search(None,'abc')
+# print(resp)
+
+# resp = dis.selectBook('123456789012')
+# print(resp) # returns copy tuples (only one in this case)
+
+# resp = dis.locateBook(123456789012)
+# print(resp) # returns floor, subject, aisle, shelf (or something)
+
+
+dis.submitDamagedBook("0-136-08620-9",1)
+
+
+
+
 
 
 
