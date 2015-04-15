@@ -53,8 +53,7 @@ class Accessor:
         return False
 
 
-    def search(self, ISBN = None, title = None, publisher = None,
-        edition = None, author = None):
+    def search(self, ISBN = None, title = None, author = None):
         #TODO: cut it down to ISBN author title
         # v this is really hackish, do not replicate
         terms = locals()
