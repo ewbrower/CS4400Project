@@ -60,7 +60,9 @@ class Accessor:
         terms.pop("self", None)
         # if author !None, then search the Author database only and return
         if author != None and ISBN != None:
-            sql = 'SELECT * FROM Author WHERE ISBN = %s AND author = %s'%(ISBN, author)
+            sql = 'SELECT * FROM Author '\
+                'WHERE ISBN LIKE "%%%s%%" '\
+                'AND author LIKE "%%%s%%"'%(ISBN, author)
             resp = self.query(sql, (ISBN, author))
             return resp
         # otherwise, construct the SQL statement
@@ -85,6 +87,11 @@ class Accessor:
         if copy is not -1:
             sql += ' AND copy_num = "%s"'%copy
         return self.query(sql)
+
+    def getCopies(self, ISBN):
+        sql = 'SELECT count(*) FROM Book_Copy WHERE ISBN = "%(ISBN)s"'
+        # return the only item in the query list and the SQL SELECT list
+        return self.query(sql)[0][0]
 
     def submitRequest(self, ISBN):
         pass
@@ -239,7 +246,7 @@ dis = Accessor()
 # res = dis.submitDamagedBook("ewbrower","0-136-08620-9",1)
 # print(res)
 
-res = dis.search(None,"Database",None)
+res = dis.getCopies("0-136-08620-9")
 print(res)
 
 
