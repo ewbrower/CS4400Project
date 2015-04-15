@@ -19,7 +19,6 @@ class Library:
         f2=Frame(self.Login)
         f2.pack(expand=True)
 
-
         Label(f2, text='Username').grid(row=0, column=0, sticky=E)
         Label(f2, text='Password').grid(row=1, column=0, sticky=E)
 
@@ -39,6 +38,9 @@ class Library:
     def LoginCheck(self): #checking if information matches with database after hitting login(1)
         User=self.Username.get()
         Psw=self.Psw.get()
+        print(User, Psw)
+        print(type(User),type(Psw))
+        print(self.a.login(User,Psw))
         if self.a.login(User,Psw)==True:
             messagebox.showinfo('Success','You have logged in successfully.')
             self.SearchBooks()
@@ -89,8 +91,12 @@ class Library:
         self.makeProfile=Toplevel()
         self.makeProfile.title('Create Profile')
 
+        f1=Frame(self.makeProfile)
+        f1.grid(row=4,column=1, columnspan=3)
         self.FN=StringVar()
-        self.DOB=StringVar()
+        self.month=StringVar()
+        self.year=StringVar()
+        self.day=StringVar()
         self.EMAIL=StringVar()
         self.ADDRESS=StringVar()
         self.LN=StringVar()
@@ -99,17 +105,23 @@ class Library:
         self.DEPARTMENT=StringVar()
 
         Label(self.makeProfile, text ='First Name').grid(row=2, column = 1, sticky=E)
-        Label(self.makeProfile, text ='D.O.B').grid(row=4, column = 1, sticky=E)
+        Label(f1, text ='D.O.B').grid(row=1, column = 1, sticky=E)
+        Label(f1, text = '-').grid(row=1,column=3)
+        Label(f1, text = '-').grid(row=1,column=5)
         Label(self.makeProfile, text ='Email').grid(row=6, column = 1, sticky=E)
         Label(self.makeProfile, text ='Address').grid(row=8, column = 1, sticky=E)
         Label(self.makeProfile, text ='Last Name').grid(row=2, column = 4, sticky=E)
         Label(self.makeProfile, text = 'Gender').grid(row=4, column = 4, sticky=E)
         Label(self.makeProfile, text ='Are you a faculty member?').grid(row=6, column = 4, sticky=E)
-
+        
         e1=Entry(self.makeProfile, textvariable=self.FN)
         e1.grid(row=2,column=2, ipadx=30)
-        e2=Entry(self.makeProfile, textvariable=self.DOB)
-        e2.grid(row=4,column=2, ipadx=30)
+        mon=Entry(f1, textvariable=self.month)
+        mon.grid(row=1,column=2,ipadx=5)
+        day=Entry(f1, textvariable=self.day)
+        day.grid(row=1,column=4, ipadx=5)
+        year=Entry(f1, textvariable=self.year)
+        year.grid(row=1,column=6, ipadx=12)
         e3=Entry(self.makeProfile, textvariable=self.EMAIL)
         e3.grid(row=6,column=2, ipadx=30)
         e4=Entry(self.makeProfile, textvariable=self.ADDRESS)
@@ -117,7 +129,7 @@ class Library:
 
         e5=Entry(self.makeProfile, textvariable=self.LN)
         e5.grid(row=2,column=5, ipadx=30)
-        w=OptionMenu(self.makeProfile, self.GENDER, 'male','female')
+        w=OptionMenu(self.makeProfile, self.GENDER, 'M','F')
         w.grid(row=4,column=5)
         r=Radiobutton(self.makeProfile, text='Yes',variable=self.FACULTY,command=self.department)
         r.grid(row=6,column=5, ipadx=30)
@@ -127,23 +139,26 @@ class Library:
 
     def department(self):
         Label(self.makeProfile, text ='Associated Department').grid(row=8, column = 4, sticky=E)### rendered invisible
-        dep=OptionMenu(self.makeProfile,self.DEPARTMENT, 'Chemistry','Math')
+        dep=OptionMenu(self.makeProfile,self.DEPARTMENT, 'Chemistry','Math','Physics', 'Biology','Architecture','Engineering','Admissions')
         dep.grid(row=8,column=5)
 
     def Create(self):
         U=self.U.get()
         P=self.P.get()
         FN=self.FN.get()
-        DOB=self.DOB.get()
+        month=self.month.get()
+        day=self.day.get()
+        year=self.year.get()
         EMAIL=self.EMAIL.get()
         ADDRESS=self.ADDRESS.get()
         LN=self.LN.get()
         GENDER=self.GENDER.get()
         FACULTY=self.FACULTY.get()
         DEPARTMENT=self.DEPARTMENT.get()
+        
         if FACULTY != 'Yes':
             DEPARTMENT='NULL'
-        if self.a.createProfile(U,FN,LN,DOB,'No',GENDER,EMAIL,ADDRESS,FACULTY, '0.00',DEPARTMENT)==True:
+        if self.a.createProfile(U,FN,LN,str(month+'-'+day+'-'+year),'No',GENDER,EMAIL,ADDRESS,FACULTY, '0.00',DEPARTMENT)==True:
             messagebox.showinfo('Success','Profile created')
             self.BackToLogin()
         else:
@@ -173,14 +188,29 @@ class Library:
         e3=Entry(self.Search, textvariable=self.Author)
         e3.grid(row=6, column = 3, ipadx=30)
 
-        b1=Button(self.Search, text='Back')#command = go back
+        b1=Button(self.Search, text='Back',command = self.goBacktoLogin)
         b1.grid(row=8, column=2)
-        b1=Button(self.Search, text='Search')#command = search SQL
+        b1=Button(self.Search, text='Search',command = self.Search)
         b1.grid(row=8, column=4)
-        b1=Button(self.Search, text='Close')#command = close
+        b1=Button(self.Search, text='Close',command = self.close)
         b1.grid(row=8, column=6)
 
+    def goBacktoLogin(self):
+        self.Search.withdraw()
+        self.Login.deiconify()
 
+    def close(self):
+        self.Login.destroy()
+
+    def Search(self):
+        ISBN=self.ISBN.get()
+        TITLE=self.Title.get()
+        AUTHOR=self.Author.get()
+
+        data=self.a.search(ISBN, TITLE, AUTHOR)
+        aList = data.fetchall()
+        print(aList)
+        
     def RequestHold(self): #####################FIX THE BORDERS
         self.Search.withdraw()
         self.holdRequest=TopLevel()
