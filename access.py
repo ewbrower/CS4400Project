@@ -68,11 +68,13 @@ class Accessor:
         sql = "SELECT * FROM Book "
         for param in terms:
             if terms[param] is not None:
+                print(param)
+                print(terms[param])
                 if first:
-                    sql += 'WHERE %s = "%s" '%(param, terms[param])
+                    sql += 'WHERE %s LIKE "%%%s%%" '%(param, terms[param])
                     first = False
                 else:
-                    sql += 'AND %s = "%s" '%(param, terms[param])
+                    sql += 'AND %s LIKE "%%%s%%" '%(param, terms[param])
         # and execute
         resp = self.query(sql)
         return resp
@@ -104,12 +106,22 @@ class Accessor:
         # then go get the fine
         pass
 
-    def submitDamagedBook(self, ISBN, copy):
+    def submitDamagedBook(self, user, ISBN, copy):
         # fine here?
         # get price of the book
         costSQL = 'SELECT cost FROM Book WHERE ISBN = "%s"'%ISBN
         cost = self.query(costSQL)[0][0]
         print(cost)
+        # get penalty
+        penalty = 'SELECT penalty FROM User WHERE user = "%s"'%user
+        # add cost to the user's penalty
+
+        penaltySQL = 'UPDATE User SET penalty = "%s" '\
+            'WHERE user = "%s"'%(penalty,user)
+        # get specific copy of book and do shit to it
+        damSQL = 'UPDATE Book_Copy SET damaged = "TRUE" '\
+            'WHERE ISBN = "%s" AND copy_num = "%s"'%(ISBN,copy)
+        return True
 
     def submitLostBook(self, ISBN, copy):
         # delete from database?
@@ -224,8 +236,11 @@ dis = Accessor()
 # print(resp) # returns floor, subject, aisle, shelf (or something)
 
 
-dis.submitDamagedBook("0-136-08620-9",1)
+# res = dis.submitDamagedBook("ewbrower","0-136-08620-9",1)
+# print(res)
 
+res = dis.search(None,"Database",None)
+print(res)
 
 
 
