@@ -116,10 +116,12 @@ class Accessor:
 
     # might want to consolidate damaged and lost
     def submitDamagedBook(self, user, ISBN, copy):
-        return self.brokenBook(user, ISBN, copy, True)
+        self.brokenBook(user, ISBN, copy, True)
+        return True
 
     def submitLostBook(self, user, ISBN, copy):
-        return self.brokenBook(user, ISBN, copy, False)
+        self.brokenBook(user, ISBN, copy, False)
+        return True
 
     def brokenBook(self, user, ISBN, copy, damaged):
         # get price of the book
@@ -128,16 +130,14 @@ class Accessor:
         # get current penalty
         penaltySQL = 'SELECT penalty FROM Student_Faculty WHERE username = "%s"'%user
         penalty = self.query(penaltySQL)[0][0]
-        # print(penalty, type(penalty))
-        # additional = str(float(penalty) + cost)
-        # print(additional)
         # solve for new penalty, convert to string
         if damaged:
             newPen = str(float(penalty) + float(cost) * 0.5)
         else:
             newPen = str(float(penalty) + float(cost))
-        penaltySQL = 'UPDATE User SET penalty = "%s" '\
-            'WHERE user = "%s"'%(newPen, user)
+        penaltySQL = 'UPDATE Student_Faculty SET penalty = %s '\
+            'WHERE username = "%s";'%(newPen, user)
+        self.query(penaltySQL)
         # get specific copy of book and do shit to it
         sql = 'UPDATE Book_Copy SET damaged = 1 '\
             'WHERE ISBN = "%s" AND copy_num = "%s"'%(ISBN,copy)
@@ -252,8 +252,8 @@ dis = Accessor()
 # print(resp) # returns floor, subject, aisle, shelf (or something)
 
 
-res = dis.submitDamagedBook("ewbrower","0-136-08620-9",1)
-print(res)
+# res = dis.submitDamagedBook("ewbrower","0-136-08620-9",1)
+# print(res)
 
 # res = dis.getCopies("0-136-08620-9")
 # print(res)
