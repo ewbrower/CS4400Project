@@ -218,6 +218,7 @@ WHERE username = $username;
 
 UPDATE Book_Copy
 SET checked_out = TRUE
+	AND hold = FALSE
 WHERE ISBN = $ISBN
   AND copy_num = $copy_num;
 
@@ -239,7 +240,8 @@ VALUES(
 -- Return Book --
 
 UPDATE Book_Copy
-SET checked_out = FALSE
+SET checked_out = FALSE 
+	AND damaged=  FALSE
 WHERE ISBN = $ISBN
   AND copy_num = $copy_num;
 
