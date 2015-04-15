@@ -146,6 +146,28 @@ FROM Author
 WHERE ISBN = $ISBN
 AND author = $author;
 
+-- Request Hold --
+UPDATE Book_Copy
+SET hold= 1
+WHERE ISBN = $ISBN 
+	AND copy_num=(SELECT copy_num 
+					FROM Book_Copy 
+					WHERE ISBN=$ISBN 
+					ORDER BY copy_num LIMIT 1);
+
+
+INSERT INTO Issues
+VALUES(
+	$issue_id, 
+	$username,
+	$issue_date, 
+	$extension_date,
+	0,
+	$copy_num,
+	return_date,
+	$ISBN);
+	
+	
 -- Future Hold Request --
 
 SELECT copy_num
@@ -199,6 +221,10 @@ SET checked_out = TRUE
 WHERE ISBN = $ISBN
   AND copy_num = $copy_num;
 
+  
+UPDATE Issues
+SET return_date = $return_date WHERE issue_id = $issue_id;
+
 INSERT INTO Issues
 VALUES(
   $issue_id,
@@ -208,7 +234,7 @@ VALUES(
   $extension_count,
   $copy_num,
   $return_date,
-  $ISBN)
+  $ISBN);
 
 -- Return Book --
 

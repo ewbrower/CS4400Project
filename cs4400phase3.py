@@ -39,9 +39,6 @@ class Library:
     def LoginCheck(self): #checking if information matches with database after hitting login(1)
         User=self.Username.get()
         Psw=self.Psw.get()
-        print(User, Psw)
-        print(type(User),type(Psw))
-        print(self.a.login(User,Psw))
         if self.a.login(User,Psw)==True:
             messagebox.showinfo('Success','You have logged in successfully.')
             self.SearchBooks()
@@ -177,10 +174,14 @@ class Library:
         self.ISBN=StringVar()
         self.Title=StringVar()
         self.Author=StringVar()
+        self.Publisher=StringVar()
+        self.Edition=IntVar()
 
         Label(self.Search, text='ISBN').grid(row=2, column =2, sticky=E)
         Label(self.Search, text='Title').grid(row=4, column =2, sticky=E)
         Label(self.Search, text='Author').grid(row=6, column =2, sticky=E)
+        Label(self.Search, text='Publisher').grid(row=2, column = 4, sticky=E)
+        Label(self.Search, text='Edition').grid(row=4,column=4, sticky=E)
 
         e1=Entry(self.Search, textvariable=self.ISBN)
         e1.grid(row=2, column = 3, ipadx=30)
@@ -188,6 +189,10 @@ class Library:
         e2.grid(row=4, column = 3, ipadx=30)
         e3=Entry(self.Search, textvariable=self.Author)
         e3.grid(row=6, column = 3, ipadx=30)
+        e4=Entry(self.Search, textvariable=self.Publisher)
+        e4.grid(row=2, column=5, ipadx=30)
+        e5=Entry(self.Search,textvariable=self.Edition)
+        e5.grid(row=4, column=5, ipadx=30)
 
         b1=Button(self.Search, text='Back',command = self.goBacktoLogin)
         b1.grid(row=8, column=2)
@@ -207,14 +212,20 @@ class Library:
         ISBN=self.ISBN.get()
         TITLE=self.Title.get()
         AUTHOR=self.Author.get()
+        PUBLISHER=self.Publisher.get()
+        EDITION=self.Edition.get()
         if ISBN =='':
             ISBN=None
         if TITLE=='':
             TITLE=None
         if AUTHOR=='':
             AUTHOR=None
+        if PUBLISHER=='':
+            PUBLISHER=None
+        if EDITION=='':
+            EDITION=None
 
-        data=self.a.search(ISBN, TITLE, AUTHOR)
+        data=self.a.search(ISBN, TITLE, AUTHOR, PUBLISHER, EDITION)
         newlist=[]
         for i in data:
             newlist.append([i[0],i[1],i[3],0])
@@ -235,7 +246,6 @@ class Library:
         Label(frame, text='# copies available',width=10).grid(row=1,column=5,sticky=E+W, ipadx=1)
 
         self.BooksFound=data
-        print(len(self.BooksFound))
         print(data)
         self.selected=[]
         self.var=StringVar()
@@ -291,7 +301,7 @@ class Library:
 
 
     def holdrequest(self):
-        request=self.var
+        booktohold=self.var
 
     def RequestExtension(self): 
         self.RequestExtension=Toplevel()
