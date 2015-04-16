@@ -99,20 +99,12 @@ class Accessor:
         # return the whole query return
         return self.query(sql)
 
-    def getCopy(self, ISBN, onlyAvailable = True):
-        sql = 'SELECT copy_num FROM Book_Copy WHERE ISBN = "%s" '\
-                'AND checked_out = 0'%ISBN
-        res = self.query(sql)
-        if len(res) == 0:
-            return False
-        return res
-
     def submitRequest(self, user, ISBN):
         # also really hackish
-        copy = self.getCopy(ISBN)
-        if copy == False:
+        if not self.availableBook(ISBN, 'r'):
             return False
-        copy = copy[0][0]
+        copy = self.getNextAvailable(ISBN)
+        print(copy)
         userExt = 5 # this needs to be a function
         # need to find out how long a book can be checked out
         issueSQL = 'INSERT INTO Issues (username, issue_date, extension_date, '\
@@ -121,10 +113,10 @@ class Accessor:
         ' DATE_ADD(CURDATE(), INTERVAL 10 DAY), "%s")'\
         %(user, userExt, copy, ISBN)
         self.query(issueSQL)
-        # now update that specific copy
-        copySQL = 'UPDATE Book_Copy SET checked_out = 1 '\
-        'WHERE ISBN = "%s" AND copy_num = %s'%(ISBN, copy)
-        self.query(copySQL)
+        # now update that specific copy of the book
+        reqSQL = 'UPDATE Book_Copy SET future_requester = "%s" '\
+        'WHERE ISBN = "%s" AND copy_num = %s'%(user, ISBN, copy)
+        self.query(reqSQL)
         return True
 
     def locateBook(self, ISBN):
@@ -135,6 +127,7 @@ class Accessor:
         return self.query(sql)
 
     def checkoutBook(self, user, ISBN, copy):
+        sql = 'UPDATE '
         pass
 
     def returnBook(self, user, ISBN, copy = -1):
@@ -212,13 +205,27 @@ class Accessor:
         else:
             return False
 
-    def availableBook(self, ISBN):
-        sql = 'SELECT checked_out FROM Book_Copy WHERE ISBN = "%s"' %ISBN
-        res = self.query(sql)
-        if len(res) == 0:
+    def availableBook(self, ISBN, flag = 'c'):
+        """returns a boolean if there is an available book"""
+        sql = 'SELECT count(*) FROM Book_Copy WHERE ISBN = "%s" '%ISBN
+        if flag == 'r':
+            sql += 'AND future_requester IS NULL'
+        elif flag == 'c':
+            sql += 'AND checked_out = 0'
+        res = self.query(sql)[0][0]
+        if res == 0:
             return False
         else:
-            return res
+            return True
+
+    def getNextAvailable(self, ISBN):
+        # TODO FIX THIS!
+        sql = 'SELECT * FROM Book_Copy WHERE ISBN = "%s"'%ISBN
+        res = self.query(sql)
+        for copy in res:
+            if copy[]
+            print(item)
+        return 1
 
     def query(self, sql):
         db = self.db.cursor()
@@ -272,18 +279,20 @@ dis = Accessor()
 # resp = dis.locateBook(123456789012)
 # print(resp) # returns floor, subject, aisle, shelf (or something)
 
-
 # res = dis.submitDamagedBook("ewbrower","0-136-08620-9",1)
 # print(res)
 
 # res = dis.getCopies("0-136-08620-9")
 # print(res)
 
-# res = dis.submitRequest("ewbrower","0-123-81479-0")
+res = dis.submitRequest("ewbrower","0-123-81479-0")
+print(res)
+
+# res = dis.availableBook("0-123-81479-0")
 # print(res)
 
-res = dis.availableBook("0-123-81479-0")
-print(res)
+
+
 
 
 

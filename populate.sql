@@ -46,7 +46,7 @@ CREATE TABLE Author(
 
 CREATE TABLE Issues(
   username varchar(50) NOT NULL,
-  issue_id int NOT NULL,
+  issue_id int NOT NULL AUTO_INCREMENT,
   issue_date date NOT NULL,
   extension_date date NULL,
   extension_count int NOT NULL,
