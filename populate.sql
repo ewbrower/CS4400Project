@@ -116,13 +116,46 @@ INSERT INTO Book (ISBN, title, publisher, edition, publication_place,
         "New York", 2013, 4, "Mathematics", 200, 0),
     ("0-321-38517-9", "Linear Algebra and Its Applications", "Pearson", 4, 
         "New York", 2011, 4, "Mathematics", 150, 0),
-        
+
+INSERT INTO Author (ISBN, author) VALUES
+    ("0-136-08620-9", "Addison Wesley"),
+    ("0-123-81479-0", "Jiawei Han"),
+    ("0-123-81479-0", "Micheline Kamber"), #this is a double one
+    ("0-132-56870-5", "David Smith"),
+    ("1-285-19614-7", "Coronel"),
+    ("1-285-19614-7", "Morris"), #the second multiple authors
+    ("1-435-13211-4", "Alexander Dumas"),
+    ("0-553-59354-4", "Robert Ludlum"),
+    ("0-140-44430-0", "Victor Hugo"),
+    ("0-131-67995-3", "Edgar Goodaire"),
+    ("0-321-88407-8", "George Thomas"),
+    ("0-321-38517-9", "David Lay");
+    
 INSERT INTO User (username, password) VALUES
-    ("ewbrower", "hunter2"),
-    ("pearvarin", "aaa"),
-    ("diplo", "hunter2"),
-    ("demoGuy", "hunter2")
-    ("bbaggins", "hunter2");
+    ("ewbrower", "a"),
+    ("pearvarin", "b"),
+    ("hasquith", "c"),
+    ("bbaggins", "d"),
+    ("fbaggins", "e"),
+    ("sgamgee", "f"),
+    ("ptook", "g"),
+    ("aundomiel", "h"),
+    ("swhite", "i"),
+    ("gwhite", "j"),
+    ("gsmeagol", "k"),
+    ("lgreenleaf", "l"),
+    ("astrider", "m"),
+    ("gdwarf", "n"),
+    ("dsauron", "o"),
+    ("bmussolini", "p"),
+    ("wchurchill", "q"),
+    ("cdegaulle", "r"),
+    ("froosevelt", "s"),
+    ("tstauning", "t");
+
+INSERT INTO Staff (username) VALUES
+  ("hclinton"),
+  ("jbush");
 
 INSERT INTO Student_Faculty (username, fname, lname, dob, debarred, gender,
                                 email, address, faculty, penalty) VALUES
@@ -131,11 +164,11 @@ INSERT INTO Student_Faculty (username, fname, lname, dob, debarred, gender,
     ("pearvarin", "Varinthorn", "Banjurkajurka", "12000101", 0, "F",
         "pear@varin", "1122", 0, 20.0),
     ("hasquith", "Hayden", "Asquith", "19910827", 0, "M", 
-        "hasquith@gmail.com", "436", 0, 0.0"),
+        "hasquith@gmail.com", "436", 0, 0.0),
     ("bbaggins", "Bilbo", "Baggins", "10000412", 0, "M",
         "bilbo@underhill.net", "Bag End", 0, 0.0),
     ("fbaggins", "Frodo", "Baggins", "19870923", 0, "M", 
-        "fbaggins@gmail.com", "Shire 1", 0, 0.0"),
+        "fbaggins@gmail.com", "Shire 1", 0, 0.0),
     ("sgamgee", "Samwise", "Gamgee", "19870815", 0, "M", 
         "sgamgee@gmail.com", "Shire 2", 0, 0.0),
     ("ptook", "Pippin", "Took", "19911104", 0, "M", 
@@ -146,28 +179,27 @@ INSERT INTO Student_Faculty (username, fname, lname, dob, debarred, gender,
         "swhite@gmail.com", "Mordor", 0, 0.0),
     ("gwhite", "Gandalf", "White", "19600402", 0, "M", 
         "gwhite@gmail.com", "Valinor", 0, 0.0),
-    ("gsmeagol", "Gollum", "Smeagol", "19701225", 0, "M", 
-        "gsmeagol@gmailcom", "Riddle River", 0, 0.0),
+    ("gsmeagol", "Gollum", "Smeagol", "19701225", 1, "M", 
+        "gsmeagol@gmailcom", "Riddle River", 0, 150.0),
     ("lgreenleaf", "Legolas", "Greenleaf","19001122", 0, "M",
         "lgreenleaf@gmail.com", "Mirkwood", 0, 0.0)
     ("astrider", "Aragorn", "Strider", "19910826", 0, "M",
         "astrider@gmail.com", "Rivendell 2", 0, 0.0)
     ("gdwarf", "Gimli", "Dwarf", "19280718", 0, "M",
         "gdwarf@gmail.com", "Moria", 0, 0.0),
-    ("dsauron", "Dark", "Sauron", "18870127", 0, "M",
-        "dsauron@gmail.com", "Mordor", 0, 0.0)
+    ("dsauron", "Dark", "Sauron", "18870127", 1, "M",
+        "dsauron@gmail.com", "Mordor", 0, 120.0)
     ("bmussolini", "Benito", "Mussolini", "18830729", 0, "M", 
         "bmussolini@gmail.com", "6", 1, 0.0),
     ("wchurchill", "Winston", "Churchill", "18741130", 0, "M", 
-        "wchurchill@gmail.com", "7", 1, 0.0"),
+        "wchurchill@gmail.com", "7", 1, 0.0),
     ("cdegaulle", "Charles", "de Gaulle", "18901122", 0, "M", 
         "cdegaulle@gmail.com", "77", 1, 0.0),
     ("froosevelt", "Franklin", "Roosevelt", "18820130", 0, "M", 
         "froosevelt@gmail.com", "777", 1, 0.0),
     ("tstauning", "Thorvald", "Stauning", "18731026", 0, "M", 
         "tstauning@gmail.com", "7777", 1, 0.0);
-    
-
+  
 INSERT INTO Book_Copy (ISBN, copy_num, hold, damaged, checked_out) VALUES
     ("0-136-08620-9", 1, 0, 0, 0),
     ("0-136-08620-9", 2, 0, 0, 0),
@@ -208,7 +240,3 @@ INSERT INTO Book_Copy (ISBN, copy_num, hold, damaged, checked_out) VALUES
     ("0-321-38517-9", 2, 0, 0, 0),
     ("0-321-38517-9", 3, 0, 0, 0),
     ("0-321-38517-9", 4, 0, 0, 0);
-
-
-
-
