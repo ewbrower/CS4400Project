@@ -149,11 +149,8 @@ AND author = $author;
 -- Request Hold --
 UPDATE Book_Copy
 SET hold= 1
-WHERE ISBN = $ISBN 
-	AND copy_num=(SELECT copy_num 
-					FROM Book_Copy 
-					WHERE ISBN=$ISBN 
-					ORDER BY copy_num LIMIT 1);
+WHERE ISBN = "0-136-08620-9" AND hold = 0 AND damaged = 0 AND checked_out = 0
+LIMIT 1;
 
 
 INSERT INTO Issues

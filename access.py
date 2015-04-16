@@ -89,8 +89,12 @@ class Accessor:
             sql += ' AND copy_num = "%s"'%copy
         return self.query(sql)
 
-    def getCopies(self, ISBN):
-        sql = 'SELECT count(*) FROM Book_Copy WHERE ISBN = "%(ISBN)s"'
+    def getCopies(self, ISBN, onlyAvailable = False):
+        if onlyAvailable:
+            sql = 'SELECT count(*) FROM Book_Copy WHERE ISBN = "%(ISBN)s" '\
+                    'AND checked_out = 0';
+        else:
+            sql = 'SELECT count(*) FROM Book_Copy WHERE ISBN = "%(ISBN)s"'
         # return the only item in the query list and the SQL SELECT list
         return self.query(sql)[0][0]
 
