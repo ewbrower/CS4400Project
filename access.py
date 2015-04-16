@@ -91,15 +91,41 @@ class Accessor:
 
     def getCopies(self, ISBN, onlyAvailable = False):
         if onlyAvailable:
-            sql = 'SELECT count(*) FROM Book_Copy WHERE ISBN = "%(ISBN)s" '\
-                    'AND checked_out = 0';
+            sql = 'SELECT count(*) FROM Book_Copy WHERE ISBN = "%s" '\
+                    'AND checked_out = 0'%ISBN
         else:
-            sql = 'SELECT count(*) FROM Book_Copy WHERE ISBN = "%(ISBN)s"'
+            sql = 'SELECT count(*) FROM Book_Copy WHERE ISBN = "%s"'%ISBN
         # return the only item in the query list and the SQL SELECT list
-        return self.query(sql)[0][0]
+        # return the whole query return
+        return self.query(sql)
 
-    def submitRequest(self, ISBN):
-        pass
+    def getCopy(self, ISBN, onlyAvailable = True):
+        sql = 'SELECT copy_num FROM Book_Copy WHERE ISBN = "%s" '\
+                'AND checked_out = 0'%ISBN
+        res = self.query(sql)
+        if len(res) == 0:
+            return False
+        return res
+
+    def submitRequest(self, user, ISBN):
+        # also really hackish
+        copy = self.getCopy(ISBN)
+        if copy == False:
+            return False
+        copy = copy[0][0]
+        userExt = 5 # this needs to be a function
+        # need to find out how long a book can be checked out
+        issueSQL = 'INSERT INTO Issues (username, issue_date, extension_date, '\
+        'extension_count, copy_num, return_date, ISBN) VALUES '\
+        '("%s", CURDATE(), DATE_ADD(CURDATE(), INTERVAL %s DAY), 1, %s,'\
+        ' DATE_ADD(CURDATE(), INTERVAL 10 DAY), "%s")'\
+        %(user, userExt, copy, ISBN)
+        self.query(issueSQL)
+        # now update that specific copy
+        copySQL = 'UPDATE Book_Copy SET checked_out = 1 '\
+        'WHERE ISBN = "%s" AND copy_num = %s'%(ISBN, copy)
+        self.query(copySQL)
+        return True
 
     def locateBook(self, ISBN):
         sql = 'SELECT shelf, subject, '\
@@ -173,15 +199,6 @@ class Accessor:
         pass
 
 ######################## HELPER CODE ##########################
-
-    def test(self, string):
-        return string
-
-    def alltabs(self, table):
-        db = self.db.cursor()
-        sql = 'SELECT * FROM %s' %table
-        db.execute(sql)
-        return db
 
     def verify(self, user, table = "User"):
         # you have to insert tables first
@@ -262,8 +279,11 @@ dis = Accessor()
 # res = dis.getCopies("0-136-08620-9")
 # print(res)
 
+# res = dis.submitRequest("ewbrower","0-123-81479-0")
+# print(res)
 
-
+res = dis.availableBook("0-123-81479-0")
+print(res)
 
 
 
