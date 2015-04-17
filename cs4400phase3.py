@@ -175,7 +175,7 @@ class Library:
         self.Title=StringVar()
         self.Author=StringVar()
         self.Publisher=StringVar()
-        self.Edition=IntVar()
+        self.Edition=StringVar()
 
         Label(self.Search, text='ISBN').grid(row=2, column =2, sticky=E)
         Label(self.Search, text='Title').grid(row=4, column =2, sticky=E)
@@ -230,7 +230,7 @@ class Library:
         
         for i in data:
             copies=self.a.getCopies(i[0])
-            newlist.append([i[0],i[1],i[3],copies])
+            newlist.append([i[0],i[1],i[3],copies[0]])
         self.RequestHold(newlist)
         
     def RequestHold(self, data): #####################FIX GUI

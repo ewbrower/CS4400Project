@@ -224,7 +224,8 @@ class Accessor:
         res = self.query(sql)
         for copy in res:
             #if copy[]
-            print(item)
+            #print(item)
+            pass
         return 1
 
     def query(self, sql):
