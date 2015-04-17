@@ -223,7 +223,7 @@ class Accessor:
         sql = 'SELECT * FROM Book_Copy WHERE ISBN = "%s"'%ISBN
         res = self.query(sql)
         for copy in res:
-            if copy[]
+            #if copy[]
             print(item)
         return 1
 

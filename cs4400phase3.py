@@ -227,8 +227,10 @@ class Library:
 
         data=self.a.search(ISBN, TITLE, AUTHOR, PUBLISHER, EDITION)
         newlist=[]
+        
         for i in data:
-            newlist.append([i[0],i[1],i[3],0])
+            copies=self.a.getCopies(i[0])
+            newlist.append([i[0],i[1],i[3],copies])
         self.RequestHold(newlist)
         
     def RequestHold(self, data): #####################FIX GUI
