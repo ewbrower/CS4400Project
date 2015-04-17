@@ -177,30 +177,63 @@ class Library:
         self.Publisher=StringVar()
         self.Edition=StringVar()
 
-        Label(self.Search, text='ISBN').grid(row=2, column =2, sticky=E)
-        Label(self.Search, text='Title').grid(row=4, column =2, sticky=E)
-        Label(self.Search, text='Author').grid(row=6, column =2, sticky=E)
-        Label(self.Search, text='Publisher').grid(row=2, column = 4, sticky=E)
-        Label(self.Search, text='Edition').grid(row=4,column=4, sticky=E)
+        f1=Frame(self.Search)
+        f1.grid(row=1,column=1)
+        f2=Frame(self.Search)
+        f2.grid(row=2,column=1)
+        Label(f1, text='ISBN').grid(row=2, column =2, sticky=E)
+        Label(f1, text='Title').grid(row=4, column =2, sticky=E)
+        Label(f1, text='Author').grid(row=6, column =2, sticky=E)
+        Label(f1, text='Publisher').grid(row=2, column = 4, sticky=E)
+        Label(f1, text='Edition').grid(row=4,column=4, sticky=E)
 
-        e1=Entry(self.Search, textvariable=self.ISBN)
+        e1=Entry(f1, textvariable=self.ISBN)
         e1.grid(row=2, column = 3, ipadx=30)
-        e2=Entry(self.Search, textvariable=self.Title)
+        e2=Entry(f1, textvariable=self.Title)
         e2.grid(row=4, column = 3, ipadx=30)
-        e3=Entry(self.Search, textvariable=self.Author)
+        e3=Entry(f1, textvariable=self.Author)
         e3.grid(row=6, column = 3, ipadx=30)
-        e4=Entry(self.Search, textvariable=self.Publisher)
+        e4=Entry(f1, textvariable=self.Publisher)
         e4.grid(row=2, column=5, ipadx=30)
-        e5=Entry(self.Search,textvariable=self.Edition)
+        e5=Entry(f1,textvariable=self.Edition)
         e5.grid(row=4, column=5, ipadx=30)
 
-        b1=Button(self.Search, text='Back',command = self.goBacktoLogin)
-        b1.grid(row=8, column=2)
-        b1=Button(self.Search, text='Search',command = self.search)
-        b1.grid(row=8, column=4)
-        b1=Button(self.Search, text='Close',command = self.close)
-        b1.grid(row=8, column=6)
+        b1=Button(f2, text='Back',command = self.goBacktoLogin)
+        b1.grid(row=1, column=1)
+        b1=Button(f2, text='Menu', command=self.gotoMenu)
+        b1.grid(row=1, column=2)
+        b1=Button(f2, text='Search',command = self.search)
+        b1.grid(row=1, column=3)
+        b1=Button(f2, text='Close',command = self.close)
+        b1.grid(row=1, column=4)
+        
+    def gotoMenu(self):
+        self.Search.withdraw()
+        self.Menu=Toplevel()
+        self.Menu.title('Menu')
 
+        b1=Button(self.Menu, text='Search Books', command=self.menutosearch)
+        b1.grid(row=1,column=1)
+        b2= Button(self.Menu, text='Request Extension', command=self.RequestExtension)
+        b2.grid(row=1,column=2)
+        b3=Button(self.Menu, text='Future Hold Request', command=self.FutureHoldRequest)
+        b3.grid(row=2, column=1)
+        b4=Button(self.Menu, text='Track Location', command=self.TrackLocation)
+        b4.grid(row=2,column=2)
+        b5=Button(self.Menu, text='Back', command=self.menutologin)
+        b5.grid(row=3,column=1)
+        b6=Button(self.Menu, text='Close', command=self.close)
+        b6.grid(row=3,column=2)
+
+    def menutosearch(self):
+        self.Menu.withdraw()
+        self.Login.deiconify()
+        self.SearchBooks()
+
+    def menutologin(self):
+        self.Menu.withdraw()
+        self.Login.deiconify()
+        
     def goBacktoLogin(self):
         self.Search.withdraw()
         self.Login.deiconify()
@@ -305,7 +338,8 @@ class Library:
     def holdrequest(self):
         booktohold=self.var
 
-    def RequestExtension(self): 
+    def RequestExtension(self):
+        self.Menu.withdraw()
         self.RequestExtension=Toplevel()
         self.RequestExtension.title('Request extension on a book')
 
@@ -345,6 +379,7 @@ class Library:
         b2=Button(self.RequestExtension,text='Submit').grid(row=7,column=5)
 
     def FutureHoldRequest(self):
+        self.Menu.withdraw()
         self.FutureHoldRequest=Toplevel()
         self.FutureHoldRequest.title("Future Hold Request for a Book")
 
@@ -367,6 +402,7 @@ class Library:
 
 
     def TrackLocation(self):
+        self.Menu.withdraw()
         self.locate=TopLevel()
         self.locate.title('Track Book Location')
 
@@ -392,7 +428,7 @@ class Library:
         Entry(self.locate,textvariable=shelfno,state='readonly').grid(row=5,column=4, ipadx=20)
         Entry(self.locate,textvariable=subj,state='readonly').grid(row=6,column=4, ipadx=20)
         
-
+        
 
 win=Tk()
 w=Library(win)

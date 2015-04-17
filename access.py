@@ -5,6 +5,10 @@ host = "academic-mysql.cc.gatech.edu"
 username = "cs4400_Group_33"
 passwd = "3RMYn5Tp"
 
+#need for Search - 2 separate methods: 1. for searching for available books and 2. for searching for reserved books
+#implement reserve
+#method for returning the type of user the user logged on is as in student or faculty - for determining return dates
+
 class Accessor:
     """This class accesses the MySQL database"""
     def __init__(self):

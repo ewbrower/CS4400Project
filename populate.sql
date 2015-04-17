@@ -1,4 +1,4 @@
-CREATE TABLE User(
+﻿CREATE TABLE User(
   username varchar(50) NOT NULL,
   password varchar(50) NOT NULL,
   PRIMARY KEY(username));
@@ -112,10 +112,10 @@ INSERT INTO Book (ISBN, title, publisher, edition, publication_place,
         "New York", 1982, 3, "Fiction", 15, 0),
     ("0-131-67995-3", "Discrete Mathematics with Graph Theory", "Pearson", 3, 
         "New York", 2005, 4, "Mathematics", 145, 0),
-    ("0-321-88407-8", "Thomas' Calculus: Early Transcendentals" "Pearson", 13, 
+    ("0-321-88407-8", "Thomas' Calculus: Early Transcendentals", "Pearson", 13, 
         "New York", 2013, 4, "Mathematics", 200, 0),
     ("0-321-38517-9", "Linear Algebra and Its Applications", "Pearson", 4, 
-        "New York", 2011, 4, "Mathematics", 150, 0),
+        "New York", 2011, 4, "Mathematics", 150, 0)
 
 INSERT INTO Author (ISBN, author) VALUES
     ("0-136-08620-9", "Addison Wesley"),
@@ -182,13 +182,13 @@ INSERT INTO Student_Faculty (username, fname, lname, dob, debarred, gender,
     ("gsmeagol", "Gollum", "Smeagol", "19701225", 1, "M", 
         "gsmeagol@gmailcom", "Riddle River", 0, 150.0),
     ("lgreenleaf", "Legolas", "Greenleaf","19001122", 0, "M",
-        "lgreenleaf@gmail.com", "Mirkwood", 0, 0.0)
+        "lgreenleaf@gmail.com", "Mirkwood", 0, 0.0),
     ("astrider", "Aragorn", "Strider", "19910826", 0, "M",
-        "astrider@gmail.com", "Rivendell 2", 0, 0.0)
+        "astrider@gmail.com", "Rivendell 2", 0, 0.0),
     ("gdwarf", "Gimli", "Dwarf", "19280718", 0, "M",
         "gdwarf@gmail.com", "Moria", 0, 0.0),
     ("dsauron", "Dark", "Sauron", "18870127", 1, "M",
-        "dsauron@gmail.com", "Mordor", 0, 120.0)
+        "dsauron@gmail.com", "Mordor", 0, 120.0),
     ("bmussolini", "Benito", "Mussolini", "18830729", 0, "M", 
         "bmussolini@gmail.com", "6", 1, 0.0),
     ("wchurchill", "Winston", "Churchill", "18741130", 0, "M", 
