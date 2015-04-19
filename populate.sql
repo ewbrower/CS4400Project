@@ -103,9 +103,9 @@ INSERT INTO Book (ISBN, title, publisher, edition, publication_place,
     ("0-132-56870-5", "Engineering Computation with MATLAB", "Prentice Hall", 3, 
         "Upper Saddle River", 2012, 1, "Computer Science", 120, 0),
     ("1-285-19614-7", "Database Systems", "Penguin", 8, "Detroit", 
-        2011, 1, "Computer Science", 215.0, 1),
+        2011, 1, "Computer Science", 215.0, 0),
     ("1-435-13211-4", "The Count of Monte Cristo", "Barnes & Noble", 1, 
-        "New York", 2011, 3, "Fiction", 25, 1),
+        "New York", 2011, 3, "Fiction", 25, 0),
     ("0-553-59354-4", "The Bourne Identity", "Penguin", 1, 
         "New York", 2010, 3, "Fiction", 20, 0),
     ("0-140-44430-0","Les Misérables", "Penguin", 1, 
@@ -201,8 +201,8 @@ INSERT INTO Student_Faculty (username, fname, lname, dob, debarred, gender,
         "tstauning@gmail.com", "7777", 1, 0.0);
   
 INSERT INTO Book_Copy (ISBN, copy_num, hold, damaged, checked_out) VALUES
-    ("0-136-08620-9", 1, 0, 0, 0),
-    ("0-136-08620-9", 2, 0, 0, 0),
+    ("0-136-08620-9", 1, 0, 1, 0),
+    ("0-136-08620-9", 2, 0, 1, 0),
     ("0-136-08620-9", 3, 0, 0, 0),
     ("0-123-81479-0", 1, 0, 0, 0),
     ("0-123-81479-0", 2, 0, 0, 0),
@@ -217,10 +217,10 @@ INSERT INTO Book_Copy (ISBN, copy_num, hold, damaged, checked_out) VALUES
     ("1-285-19614-7", 1, 0, 0, 0),
     ("1-285-19614-7", 2, 0, 0, 0),
     ("1-285-19614-7", 3, 0, 0, 0),
-    ("1-435-13211-4", 1, 0, 0, 0),
-    ("1-435-13211-4", 2, 0, 0, 0),
-    ("1-435-13211-4", 3, 0, 0, 0),
-    ("1-435-13211-4", 4, 0, 0, 0),
+    ("1-435-13211-4", 1, 0, 1, 0),
+    ("1-435-13211-4", 2, 0, 1, 0),
+    ("1-435-13211-4", 3, 0, 1, 0),
+    ("1-435-13211-4", 4, 0, 1, 0),
     ("1-435-13211-4", 5, 0, 0, 0),
     ("1-435-13211-4", 6, 0, 0, 0),
     ("1-435-13211-4", 7, 0, 0, 0),
@@ -236,7 +236,33 @@ INSERT INTO Book_Copy (ISBN, copy_num, hold, damaged, checked_out) VALUES
     ("0-131-67995-3", 1, 0, 0, 0),
     ("0-131-67995-3", 2, 0, 0, 0),
     ("0-321-88407-8", 1, 0, 0, 0),
-    ("0-321-38517-9", 1, 0, 0, 0),
-    ("0-321-38517-9", 2, 0, 0, 0),
+    ("0-321-38517-9", 1, 0, 1, 0),
+    ("0-321-38517-9", 2, 0, 1, 0),
     ("0-321-38517-9", 3, 0, 0, 0),
     ("0-321-38517-9", 4, 0, 0, 0);
+  
+INSERT INTO Subject (name, journals, floor) VALUES
+    ("Mathematics", 3, 1),
+    ("Fiction", 3, 2),
+    ("Boring", 2, 1),
+    ("Computer Science", 2, 1);
+
+INSERT INTO Floor (floor, student_assistants, copiers) VALUES
+    (1, 10, 3),
+    (2, 5, 1);
+
+INSERT INTO Keyword (subject, keyword) VALUES
+    ("Mathematics", "School"), 
+    ("Mathematics", "Math"),
+    ("Computer Science", "School"),
+    ("Computer Science", "Code"),
+    ("Boring", "School"),
+    ("Boring", "Database"),
+    ("Fiction", "Novel");
+
+INSERT INTO Shelf (floor, shelf, aisle) VALUES
+    (1, 1, 1),
+    (1, 2, 1),
+    (1, 4, 1),
+    (2, 3, 1);
+
