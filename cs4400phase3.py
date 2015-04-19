@@ -440,7 +440,7 @@ class Library:
         self.isbntrack=StringVar()
         Entry(self.locate,textvariable=self.isbntrack).grid(row=1,column=2,ipadx=30)
         Button(self.locate,text='Locate', command=self.Locate).grid(row=1,column=3)
-
+        
         ttk.Separator(self.locate, orient=HORIZONTAL).grid(row=3,column=0,columnspan=6, sticky=E+W)
 
         Label(self.locate,text='Floor Number').grid(row=5, column=1)
@@ -448,19 +448,30 @@ class Library:
         Label(self.locate,text='Shelf Number').grid(row=5,column=3)
         Label(self.locate,text='Subject').grid(row=6,column=3)
 
-        floorno=IntVar()
-        aisleno=IntVar()
-        shelfno=IntVar()
-        subj=StringVar()
+        
+        self.floorno=IntVar()
+        self.aisleno=IntVar()
+        self.shelfno=IntVar()
+        self.subj=StringVar()
 
-        Entry(self.locate,textvariable=floorno, state='readonly').grid(row=5,column=2, ipadx=20)
-        Entry(self.locate,textvariable=aisleno,state='readonly').grid(row=6,column=2, ipadx=20)
-        Entry(self.locate,textvariable=shelfno,state='readonly').grid(row=5,column=4, ipadx=20)
-        Entry(self.locate,textvariable=subj,state='readonly').grid(row=6,column=4, ipadx=20)
+        Entry(self.locate,textvariable=self.floorno, state='readonly').grid(row=5,column=2, ipadx=20)
+        Entry(self.locate,textvariable=self.aisleno,state='readonly').grid(row=6,column=2, ipadx=20)
+        Entry(self.locate,textvariable=self.shelfno,state='readonly').grid(row=5,column=4, ipadx=20)
+        Entry(self.locate,textvariable=self.subj,state='readonly').grid(row=6,column=4, ipadx=20)
 
+        b1=Button(self.locate, text='Back',command=self.tracktomenu).grid(row=7, column=1)
+
+    def tracktomenu(self):
+        self.locate.withdraw()
+        self.Menu.deiconify()
     def Locate(self):
         isbn=self.isbntrack.get()
         location=self.a.locateBook(isbn)
+        print(location)
+        self.shelfno.set(location[0][0])
+        self.subj.set(location[0][1])
+        self.aisleno.set(location[0][2])
+        self.floorno.set(location[0][3])
         
         
 
