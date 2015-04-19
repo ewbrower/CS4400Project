@@ -5,7 +5,7 @@ import urllib.request
 from urllib import *
 from access import Accessor
 
-class Library:
+class LibraryStaff:
 
     def __init__(self,win):
         self.StaffPage(win)
@@ -307,7 +307,7 @@ class Library:
         self.Reports.withdraw()
         self.Page.deiconify()
 
-win=Tk()
-w=Library(win)
-win.mainloop()
+#win=Tk()
+#w=LibraryStaff(win)
+#win.mainloop()
 

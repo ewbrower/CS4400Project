@@ -5,12 +5,16 @@ import urllib.request
 from urllib import *
 from access import Accessor
 import datetime
+from librarystaffcs4400 import LibraryStaff
 
+#
 class Library:
 
     def __init__(self,win):
         self.LoginPage(win)
         self.a=Accessor()
+
+
 
     def LoginPage(self,win): #LoginPage(1)
         self.Login=win
@@ -35,6 +39,10 @@ class Library:
         b1.grid(row=2,column=4, sticky=EW)
         b2=Button(f2,text='Login', command=self.LoginCheck)
         b2.grid(row=2,column=2, sticky=EW)
+
+    def staff(self):
+        sta=Tk()
+        w=LibraryStaff(sta)
 
     def LoginCheck(self): #checking if information matches with database after hitting login(1)
         User=self.Username.get()
