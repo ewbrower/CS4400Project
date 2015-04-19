@@ -7,7 +7,7 @@ from access import Accessor
 import datetime
 from librarystaffcs4400 import LibraryStaff
 
-#
+
 class Library:
 
     def __init__(self,win):
@@ -41,8 +41,12 @@ class Library:
         b2.grid(row=2,column=2, sticky=EW)
 
     def staff(self):
-        sta=Tk()
-        w=LibraryStaff(sta)
+        self.s=LibraryStaff(Tk())
+
+    def checkuser(self):
+        user=self.Username.get()
+        staff=self.a.typeUser(user)
+        return staff
 
     def LoginCheck(self): #checking if information matches with database after hitting login(1)
         User=self.Username.get()
@@ -76,6 +80,7 @@ class Library:
         b2=Button(self.Register, text='Register', command=self.RegisterNew)
         b2.grid(row=6,column=2)
 
+        
     def RegisterNew(self):
         U=self.U.get()
         P=self.P.get()
@@ -214,7 +219,11 @@ class Library:
         b1.grid(row=1, column=3)
         b1=Button(f2, text='Close',command = self.close)
         b1.grid(row=1, column=4)
-        
+
+        if self.checkuser()==True:
+            b1=Button(f2, text='Staff',command=self.staff())
+            b1.grid(row=1,column=5)
+            
     def gotoMenu(self):
         self.Search.withdraw()
         self.Menu=Toplevel()
@@ -306,7 +315,7 @@ class Library:
         frame2.grid(row=3,column=1,columnspan=6)
         Label(frame2,text='Hold Request Date').pack(side=LEFT)
         holddate=StringVar()
-        date=datetime.datetime.now().strftime('%m')+'/'+datetime.datetime.now().strftime('%d')+'/'+datetime.datetime.now().strftime('%Y')
+        date=datetime.datetime.strftime(datetime.datetime.now(),'%m/%d/%y')
         holddate.set(date)
         e1=Entry(frame2,textvariable=holddate,state='readonly')
         e1.pack(side=LEFT)
@@ -314,6 +323,8 @@ class Library:
         e1=Entry(frame2,textvariable=returndate,state='readonly')
         e1.pack(side=RIGHT)
         Label(frame2,text='Estimated Return Date').pack(side=RIGHT)
+        returnD=datetime.datetime.strftime(datetime.datetime.now()+datetime.timedelta(days=17),'%m/%d/%y')
+        returndate.set(returnD)
 
         Button(self.holdRequest,text='Back', command=self.returntoSearch).grid(row=4,column=3)
         Button(self.holdRequest,text='Submit', command=self.holdrequest).grid(row=4,column=4)
@@ -394,7 +405,7 @@ class Library:
         Label(self.FutureHoldRequest,text="ISBN").grid(row=2,column=0,sticky=E)
         self.ISBN = StringVar()
         e1=Entry(self.FutureHoldRequest,textvariable=self.ISBN).grid(row=2,column=1,ipadx=30)
-        b1=Button(self.FutureHoldRequest,text='Request').grid(row=2,column=3)
+        b1=Button(self.FutureHoldRequest,text='Request', command=self.checkISBN).grid(row=2,column=3)
         ttk.Separator(self.FutureHoldRequest,orient=HORIZONTAL).grid(row=3,column=0,columnspan=4,sticky="EW")
 
         Label(self.FutureHoldRequest,text='Copy Number').grid(row=4,column=0,sticky=E)
@@ -405,19 +416,30 @@ class Library:
         self.expectedAvailable = StringVar()
         e3=Entry(self.FutureHoldRequest,textvariable=self.expectedAvailable,state="readonly").grid(row=5,column=1,ipadx=30)
 
-        b2=Button(self.FutureHoldRequest,text="OK").grid(row=6,column=1,sticky=E)
+        b2=Button(self.FutureHoldRequest,text="OK", command=self.futureReq).grid(row=6,column=1,sticky=E)
 
+        b3=Button(self.FutureHoldRequest, text='Back', command=self.fhrtomenu).grid(row=7, column=1, sticky=E)
+        
+    def checkISBN(self):
+        pass
 
+    def futureReq(self):
+        pass
+
+    def fhrtomenu(self):
+        self.FutureHoldRequest.withdraw()
+        self.Menu.deiconify()
+            
 
     def TrackLocation(self):
         self.Menu.withdraw()
-        self.locate=TopLevel()
+        self.locate=Toplevel()
         self.locate.title('Track Book Location')
 
         Label(self.locate,text='ISBN').grid(row=1,column=1)
-        isbn=StringVar()
-        Entry(self.locate,textvariable=isbn).grid(row=1,column=2,ipadx=30)
-        Button(self.locate,text='Locate').grid(row=1,column=3)
+        self.isbntrack=StringVar()
+        Entry(self.locate,textvariable=self.isbntrack).grid(row=1,column=2,ipadx=30)
+        Button(self.locate,text='Locate', command=self.Locate).grid(row=1,column=3)
 
         ttk.Separator(self.locate, orient=HORIZONTAL).grid(row=3,column=0,columnspan=6, sticky=E+W)
 
@@ -435,6 +457,10 @@ class Library:
         Entry(self.locate,textvariable=aisleno,state='readonly').grid(row=6,column=2, ipadx=20)
         Entry(self.locate,textvariable=shelfno,state='readonly').grid(row=5,column=4, ipadx=20)
         Entry(self.locate,textvariable=subj,state='readonly').grid(row=6,column=4, ipadx=20)
+
+    def Locate(self):
+        isbn=self.isbntrack.get()
+        location=self.a.locateBook(isbn)
         
         
 
