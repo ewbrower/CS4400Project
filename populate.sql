@@ -103,9 +103,9 @@ INSERT INTO Book (ISBN, title, publisher, edition, publication_place,
     ("0-132-56870-5", "Engineering Computation with MATLAB", "Prentice Hall", 3, 
         "Upper Saddle River", 2012, 1, "Computer Science", 120, 0),
     ("1-285-19614-7", "Database Systems", "Penguin", 8, "Detroit", 
-        2011, 1, "Computer Science", 215.0, 1),
+        2011, 1, "Computer Science", 215.0, 0),
     ("1-435-13211-4", "The Count of Monte Cristo", "Barnes & Noble", 1, 
-        "New York", 2011, 3, "Fiction", 25, 1),
+        "New York", 2011, 3, "Fiction", 25, 0),
     ("0-553-59354-4", "The Bourne Identity", "Penguin", 1, 
         "New York", 2010, 3, "Fiction", 20, 0),
     ("0-140-44430-0","Les Misérables", "Penguin", 1, 
@@ -259,3 +259,10 @@ INSERT INTO Keyword (subject, keyword) VALUES
     ("Boring", "School"),
     ("Boring", "Database"),
     ("Fiction", "Novel");
+
+INSERT INTO Shelf (floor, shelf, aisle) VALUES
+    (1, 1, 1),
+    (1, 2, 1),
+    (1, 4, 1),
+    (2, 3, 1);
+
