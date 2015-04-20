@@ -271,28 +271,44 @@ class Accessor:
 
 ############## REPORTS ###############
 
-    def generateReport(self):
-        # generic bundling of report information
-        pass
-
     def damageReport(self):
-        # get damaged books
-        pass
+        sql = 'SELECT count(c.ISBN), b.subject, ( '\
+        'SELECT MONTH(MAX(return_date)) FROM Issues AS i '\
+        'WHERE i.ISBN = c.ISBN AND i.copy_num = c.copy_num) AS LastDate '\
+        'FROM Book_Copy AS c '\
+        'INNER JOIN Book AS b ON b.ISBN = c.ISBN '\
+        'WHERE c.damaged = 1 '\
+        'GROUP BY LastDate, b.subject'
+        return self.query(sql)
 
-    def popularBookReport(self, monthList = [1, 2, 3]):
-        # get popular books
-        # month list is a list of ints (months)
-        # for month in monthList...
-        # TODO: might need to change it to always do last three months
-        pass
+    def popularBookReport(self, month):
+        sql ='SELECT b.title, COUNT(i.issue_id) '\
+            'FROM Issues AS i '\
+            'INNER JOIN Book AS b ON i.ISBN=b.ISBN '\
+            'WHERE MONTH(i.issue_date)=%s '\
+            'GROUP BY MONTH(i.issue_date), b.title '\
+            'ORDER BY COUNT(i.issue_id) DESC LIMIT 3'%month
+        return self.query(sql)
 
-    def frequentReport(self):
-        # frequent users
-        pass
+    def frequentReport(self, month):
+        sql = 'SELECT s.fname, s.lname, COUNT( i.issue_id ) '\
+              'FROM Issues AS i '\
+              'INNER JOIN Student_Faculty AS s ON s.username = i.username '\
+              'WHERE MONTH(i.issue_date)=%s '\
+              'GROUP BY MONTH( i.issue_date ) , s.username '\
+              'HAVING COUNT(i.issue_id)>10 '\
+              'ORDER BY COUNT( i.issue_id ) DESC '\
+              'LIMIT 5'%month
+        return self.query(sql)
 
-    def popularSubjectReport(self):
-        # popular subject
-        pass
+    def popularSubjectReport(self, month):
+        sql = 'SELECT b.subject, COUNT(i.issue_id) '\
+              'FROM Issues AS i '\
+              'INNER JOIN Book AS b ON i.ISBN=b.ISBN '\
+              'WHERE MONTH(i.issue_date)=%s '\
+              'GROUP BY MONTH(i.issue_date), b.subject '\
+              'ORDER BY COUNT(i.issue_id) DESC LIMIT 3'%month
+        return self.query(sql)
 
 ######################## HELPER CODE ##########################
 

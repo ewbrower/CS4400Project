@@ -265,78 +265,6 @@ WHERE ISBN = $data
   AND copy_num = $data;
 
 -- Damaged Report --
-
--- SELECT count(*),
---   c.return_date,
---   (SELECT subject
---     FROM Book b
---     WHERE b.ISBN = c.ISBN)
--- FROM Book_Copy c
--- WHERE damaged = TRUE;
-
-SELECT count(*) FROM Book_Copy WHERE damaged = TRUE
-JOIN (ISBN)
-SELECT subject FROM Book
-JOIN (ISBN)
-SELECT return_date FROM Issues;
-
-SELECT DISTINCT count(*), b.subject, MONTH(i.return_date) as month
-FROM Book_Copy AS c
-JOIN Book AS b ON c.ISBN = b.ISBN
-JOIN Issues AS i ON c.ISBN = i.ISBN
-WHERE c.damaged = 1
-GROUP BY month;
-
-SELECT subject, (SELECT count(*) FROM Book_Copy WHERE damaged = 1 AND ISBN = b.ISBN)
-FROM Book AS b
-GROUP BY b.subject;
-
-SELECT subject, (select * from Book_Copy WHERE ISBN = b.ISBN)
-FROM Book AS b;
-
-SELECT b.subject, c.ISBN, c.copy_num, c.damaged FROM Book AS b
-INNER JOIN Book_Copy AS c ON c.ISBN = b.ISBN
-INNER JOIN Issues AS i ON c.ISBN = i.ISBN
-WHERE c.damaged = 1;
-
-SELECT c.copy_num, (
-    SELECT ISBN, (
-      SELECT MAX(return_date) FROM Issues WHERE ISBN = b.ISBN
-      )
-    FROM Book AS b
-    WHERE ISBN = c.ISBN
-  )
-FROM Book_Copy AS c
-WHERE c.damaged = 1;
-
-SELECT i.return_date, c.ISBN, c.copy_num
-FROM Book_Copy AS c
-INNER JOIN Issues AS i ON i.copy_num = c.copy_num AND i.ISBN = c.ISBN
-WHERE c.damaged = 1;
-
-SELECT i.return_date, c.ISBN, c.copy_num
-FROM Issues AS i
-INNER JOIN Book_Copy AS c ON i.copy_num = c.copy_num AND i.ISBN = c.ISBN
-WHERE c.damaged = 1;
-
-
-SELECT c.ISBN, b.subject (
-  SELECT MAX(return_date) FROM Issues AS i
-  WHERE i.ISBN = c.ISBN AND i.copy_num = c.copy_num
-) AS LastDate
-FROM Book_Copy AS c
-INNER JOIN Book AS b ON b.ISBN = c.ISBN
-WHERE c.damaged = 1;
-
--- V this one actually works
-SELECT c.ISBN, b.subject, (
-  SELECT MAX(return_date) FROM Issues AS i
-  WHERE i.ISBN = c.ISBN AND i.copy_num = c.copy_num
-) AS LastDate
-FROM Book_Copy AS c
-INNER JOIN Book AS b ON b.ISBN = c.ISBN
-WHERE c.damaged = 1;
-
 SELECT count(c.ISBN), b.subject, (
   SELECT MONTH(MAX(return_date)) FROM Issues AS i
   WHERE i.ISBN = c.ISBN AND i.copy_num = c.copy_num
@@ -346,60 +274,31 @@ INNER JOIN Book AS b ON b.ISBN = c.ISBN
 WHERE c.damaged = 1
 GROUP BY LastDate, b.subject;
 
--- INNER JOIN Book_Copy AS c ON b.ISBN = c.ISBN
-
 -- Popular Report --
-
-SELECT name,
-       b.copy_num,
-  (SELECT count(*)
-   FROM Issues i
-   WHERE i.copy_num = b.copy_num
-    AND MONTH(i.issue_date) = $month) AS copies 
-FROM Book b
-ORDER BY copies DESC LIMIT 10;
-
-
 SELECT MONTH(i.issue_date), b.title, COUNT(i.issue_id)
 FROM Issues AS i
 INNER JOIN Book AS b ON i.ISBN=b.ISBN
+WHERE MONTH(i.issue_date)=$month
 GROUP BY MONTH(i.issue_date), b.title
 ORDER BY COUNT(i.issue_id) DESC LIMIT 3
--- how to do limit 3 per group?
 
 -- Frequent Users Report --
-
-SELECT lname,
-       fname,
-  (SELECT count(*)
-   FROM Issues i
-   WHERE i.username = u.username
-    AND MONTH(i.issue_date) = $month) AS users
-FROM USER
-ORDER BY users DESC LIMIT 5;
-
 SELECT MONTH( i.issue_date ) , s.fname, s.lname, COUNT( i.issue_id ) 
 FROM Issues AS i
 INNER JOIN Student_Faculty AS s ON s.username = i.username
+WHERE MONTH(i.issue_date)=$month
 GROUP BY MONTH( i.issue_date ) , s.username
+HAVING COUNT(i.issue_id)>10
 ORDER BY COUNT( i.issue_id ) DESC 
 LIMIT 5
--- count>10 and limit 5 per group
 
 -- Popular Subjects Report --
-
-SELECT s.name,
-  (SELECT
-     (SELECT count(*)
-      FROM Issues i
-      WHERE i.copy_num = b.copy_num
-        AND MONTH(i.issue_date) = $month) AS copies
-   FROM Book b
-   WHERE s.subject = b.subject)
-FROM Subject s
-ORDER BY copies DESC LIMIT 10;
-
-
+SELECT MONTH(i.issue_date), b.subject, COUNT(i.issue_id)
+FROM Issues AS i
+INNER JOIN Book AS b ON i.ISBN=b.ISBN
+WHERE MONTH(i.issue_date)=$month
+GROUP BY MONTH(i.issue_date), b.subject
+ORDER BY COUNT(i.issue_id) DESC LIMIT 3
 
 
 

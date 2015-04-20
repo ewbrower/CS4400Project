@@ -394,20 +394,28 @@ class Library:
         e6.grid(row=6,column=5,ipadx=30)
 
         b2=Button(self.RequestExtension,text='Submit', command=self.requestEx).grid(row=7,column=5)
+        b3=Button(self.RequestExtension, text='Back', command=self.extomenu).grid(row=7, column=6)
 
-    def calculateEx(self): #TESTT
-        issueid=self.issueId.get()
+    def extomenu(self):
+        self.RequestExtension.withdraw()
+        self.Menu.deiconify()
+        
+    def calcEx(self): ##WORKS
+        issueid=self.issueID.get()
         data=self.a.getIssueData(issueid)
-        self.checkoutDate.set(data[0])
-        self.currentExtension.set(data[1])
-        self.returnDate.set(data[2])
-        self.newExtension.set(datetime.datetime.strftime(datetime.datetime.now(),'%m/%d/%y'))
-        self.newreturnDate.set(datetime.datetime.strftime(datetime.datetime.now()+datetime.timedelta(days=17),'%m/%d/%y'))
+        print(data)
+        self.checkoutDate.set(data[0][0])
+        if data[0][1]==None:
+            self.currentExtension.set(data[0][0])
+        else:
+            self.currentExtension.set(data[0][1])
+        self.returnDate.set(data[0][2])
+        self.newExtension.set(datetime.datetime.strftime(datetime.datetime.now(),'%y-%d-%m'))
+        self.newReturnDate.set(datetime.datetime.strftime(datetime.datetime.now()+datetime.timedelta(days=17),'%y-%d-%m'))
 
         
     def requestEx(self): ###TEST
-        user=self.Username.get()
-        issueid=self.issueId.get()
+        issueid=self.issueID.get()
         self.a.requestExtension(user,issueid)
         
 

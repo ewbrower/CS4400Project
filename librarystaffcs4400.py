@@ -161,8 +161,6 @@ class LibraryStaff:
         if YN=='Y':
             self.a.submitDamagedBook(usern, isbn, copynum)
         
-        
-        
     def ReportsPage(self):
         self.Page.withdraw()
         self.Reports=Toplevel()
@@ -198,14 +196,25 @@ class LibraryStaff:
         OptionMenu(f1,self.subj2, 'Mathematics','Fiction','Boring','Computer Science').grid(row=2,column=4)
         OptionMenu(f1,self.subj3, 'Mathematics','Fiction','Boring','Computer Science').grid(row=3,column=4)
 
-        Button(f1, text='Show Report', command=self.showreport).grid(row=4,column=1,columnspan=4,sticky=E+W)
+        Button(f1, text='Show Report', command=self.damageReport).grid(row=4,column=1,columnspan=4,sticky=E+W)
         Button(f1, text='Back', command=self.damtoreports).grid(row=5,column=1,columnspan=4, sticky=E+W)
 
     def damtoreports(self):
         self.Damaged.withdraw()
         self.Reports.deiconify()
-        
-    def showreport(self):        
+
+    def damageReport(self):
+        mon=self.month.get()
+        months={'January':1, 'February':2, 'March':3}
+        data=self.a.damageReport()
+        month=months[mon]
+        aDict={}
+        for i in data:
+            if i[2]==month:
+                aDict[i[1]]=i[0]
+        self.showreport(aDict)
+          
+    def showreport(self, aDict):        
         f2=Frame(self.Damaged)
         f2.grid(row=2,column=1)
         
@@ -217,20 +226,31 @@ class LibraryStaff:
         subj1=self.subj1.get()
         subj2=self.subj2.get()
         subj3=self.subj3.get()
-        
-        Label(f2, text=month).grid(row=3,column=1)
-        Label(f2, text=subj1).grid(row=2,column=2)
-        Label(f2, text=subj2).grid(row=3,column=2)
-        Label(f2, text=subj3).grid(row=4,column=2)
 
         dam1=StringVar()
         dam2=StringVar()
         dam3=StringVar()
-        #retrieve damaged books
+
+        variables={subj1:dam1, subj2:dam2, subj3:dam3}
+        newDict={}
+        subjects=[subj1, subj2, subj3]
+        for i in subjects:
+            if i in aDict.keys():
+                newDict[i]=aDict[i]
+            else:
+                newDict[i]=0
+
+        for i in variables.keys():
+            variables[i].set(newDict[i])
+                        
+        Label(f2, text=month).grid(row=3,column=1)
+        Label(f2, text=subj1).grid(row=2,column=2)
+        Label(f2, text=subj2).grid(row=3,column=2)
+        Label(f2, text=subj3).grid(row=4,column=2)
         
-        Label(f2, text=dam1).grid(row=2,column=3)
-        Label(f2, text=dam2).grid(row=3,column=3)
-        Label(f2, text=dam3).grid(row=4,column=3)
+        Label(f2, textvariable=dam1).grid(row=2,column=3)
+        Label(f2, textvariable=dam2).grid(row=3,column=3)
+        Label(f2, textvariable=dam3).grid(row=4,column=3)
         
     def popularbooks(self):
         self.Reports.withdraw()
@@ -240,12 +260,10 @@ class LibraryStaff:
         Label(self.Popbooks, text='Month').grid(row=1,column=1)
         Label(self.Popbooks, text='Title').grid(row=1,column=2)
         Label(self.Popbooks, text='#checkouts').grid(row=1,column=3)
-
         
         Label(self.Popbooks, text='January').grid(row=2,column=1)
-        #retrieve popular books using access - store in list
-        Janlist=[['a','1'],['b','2'],['c','3']]
-        Feblist=[['a','1'],['b','2'],['c','3']]
+        Janlist=self.a.popularBookReport(1)
+        Feblist=self.a.popularBookReport(2)
         
         i=0
         while i<len(Janlist):
@@ -274,24 +292,22 @@ class LibraryStaff:
         Label(self.Freq, text='Month').grid(row=1,column=1)
         Label(self.Freq, text='User Name').grid(row=1,column=2)
         Label(self.Freq, text='#checkouts').grid(row=1,column=3)
-
         
         Label(self.Freq, text='January').grid(row=2,column=1)
-        #retrieve frequent users using access - store in list
-        Janlist=[['a','1'],['b','2'],['c','3']]
-        Feblist=[['a','1'],['b','2'],['c','3']]
+        Janlist=self.a.frequentReport(1)
+        Feblist=self.a.frequentReport(2)
         
         i=0
         while i<len(Janlist):
-            Label(self.Freq, text=Janlist[i][0]).grid(row=i+2, column=2)
-            Label(self.Freq, text=Janlist[i][1]).grid(row=i+2, column=3)
+            Label(self.Freq, text=str(Janlist[i][0]+' '+Janlist[i][1])).grid(row=i+2, column=2)
+            Label(self.Freq, text=Janlist[i][2]).grid(row=i+2, column=3)
             i+=1
         Label(self.Freq, text='February').grid(row=len(Janlist)+2, column=1)
         
         i=0
         while i<len(Feblist):
-            Label(self.Freq, text=Feblist[i][0]).grid(row=i+2+len(Janlist), column=2)
-            Label(self.Freq, text=Feblist[i][1]).grid(row=i+2+len(Janlist), column=3)
+            Label(self.Freq, text=str(Feblist[i][0]+' '+Feblist[i][1])).grid(row=i+2+len(Janlist), column=2)
+            Label(self.Freq, text=Feblist[i][2]).grid(row=i+2+len(Janlist), column=3)
             i+=1
         Button(self.Freq,text='Back', command=self.freqtoreports).grid(row=20, column=1, columnspan=3, sticky=E+W)
 
@@ -310,9 +326,8 @@ class LibraryStaff:
 
         
         Label(self.Popsub, text='January').grid(row=2,column=1)
-        #retrieve frequent users using access - store in list
-        Janlist=[['a','1'],['b','2'],['c','3']]
-        Feblist=[['a','1'],['b','2'],['c','3']]
+        Janlist=self.a.popularSubjectReport(1)
+        Feblist=self.a.popularSubjectReport(2)
         
         i=0
         while i<len(Janlist):
