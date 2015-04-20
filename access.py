@@ -294,7 +294,6 @@ class Accessor:
 ############## REPORTS ###############
 
     def damageReport(self):
-<<<<<<< HEAD
         sql = 'SELECT count(c.ISBN), b.subject, ( '\
         'SELECT MONTH(MAX(return_date)) FROM Issues AS i '\
         'WHERE i.ISBN = c.ISBN AND i.copy_num = c.copy_num) AS LastDate '\
@@ -332,25 +331,6 @@ class Accessor:
               'GROUP BY MONTH(i.issue_date), b.subject '\
               'ORDER BY COUNT(i.issue_id) DESC LIMIT 3'%month
         return self.query(sql)
-=======
-        # get damaged books
-        pass
-
-    def frequentReport(self):
-        # frequent users
-        pass
-
-    def popularBookReport(self, monthList = [1, 2, 3]):
-        # get popular books
-        # month list is a list of ints (months)
-        # for month in monthList...
-        # TODO: might need to change it to always do last three months
-        pass
-
-    def popularSubjectReport(self):
-        # popular subject
-        pass
->>>>>>> c6c21a7554097543fdc9b78d257f02c3aa7c0670
 
 ######################## HELPER CODE ##########################
 
