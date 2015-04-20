@@ -131,6 +131,38 @@ class Accessor:
         self.query(reqSQL)
         return True
 
+    def requestExtension(self, user, issue):
+        checkSQL = 'SELECT extension_count, copy_num, return_date, ISBN '\
+        'FROM Issues WHERE issue_id = %s'%issue
+        ans = self.query(checkSQL)
+        print(ans)
+        extCount = ans[0][0] + 1
+        copy_num = ans[0][1]
+        retDate = ans[0][2] + datetime.timedelta(7)
+        ISBN = ans[0][3]
+        print(extCount)
+        print(copy_num)
+        print(retDate)
+        print(ISBN)
+        # make sure they aren't extending too many times
+        if extCount == 3 and self.isFaculty(user) == False:
+            print("this")
+            return False
+        elif extCount == 6:
+            return False
+        # make sure the book doesn't have a hold on it
+        holdSQL = 'SELECT future_requester FROM Book_Copy WHERE ISBN = "%s" '\
+            'AND copy_num = %s'%(ISBN, copy_num)
+        future = self.query(holdSQL)
+        print(future)
+        if future != "NULL":
+            print("this")
+            return False
+        extSQL = 'UPDATE Issues SET extension_count = %s, return_date = "%s" '\
+            'WHERE issue_id = %s'%(extCount, retDate, issue)
+        self.query(extSQL)
+        return True
+
     def locateBook(self, ISBN):
         sql = 'SELECT shelf, subject, '\
             '(SELECT aisle FROM Shelf s WHERE s.shelf=b.shelf),'\
@@ -142,6 +174,10 @@ class Accessor:
         sql = 'UPDATE '
         pass
 
+    def searchforCheckOut(self, issueid):
+        sql = 'SELECT username, copy_num, isbn FROM Issues WHERE issue_id="%s"'%issueid
+        return self.query(sql)
+        
     def returnBook(self, user, ISBN, copy = -1):
         # if copy = -1, then we have to find out what copy this
         # user checked out
@@ -181,6 +217,11 @@ class Accessor:
         # get specific copy of book and do shit to it
         sql = 'UPDATE Book_Copy SET damaged = 1 WHERE ISBN = "%s" AND copy_num = "%s"'%(ISBN,copy)
         return self.query(sql)
+
+    def updatePenalty(self, user):
+        sql = 'UPDATE Student_Faculty SET penalty = %s WHERE username = "%s"'%user
+        self.query(sql)
+        return True
 
 ############## REPORTS ###############
 
@@ -309,9 +350,6 @@ print(res)
 # print(res)
 
 
-
-# print(dis.isFaculty("ewbrower"))
-# print(dis.isFaculty("wchurchill"))
 
 
 
