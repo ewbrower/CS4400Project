@@ -337,6 +337,15 @@ FROM Book_Copy AS c
 INNER JOIN Book AS b ON b.ISBN = c.ISBN
 WHERE c.damaged = 1;
 
+SELECT count(c.ISBN), b.subject, (
+  SELECT MONTH(MAX(return_date)) FROM Issues AS i
+  WHERE i.ISBN = c.ISBN AND i.copy_num = c.copy_num
+) AS LastDate
+FROM Book_Copy AS c
+INNER JOIN Book AS b ON b.ISBN = c.ISBN
+WHERE c.damaged = 1
+GROUP BY LastDate, b.subject;
+
 -- INNER JOIN Book_Copy AS c ON b.ISBN = c.ISBN
 
 -- Popular Report --
@@ -350,6 +359,14 @@ SELECT name,
 FROM Book b
 ORDER BY copies DESC LIMIT 10;
 
+
+SELECT MONTH(i.issue_date), b.title, COUNT(i.issue_id)
+FROM Issues AS i
+INNER JOIN Book AS b ON i.ISBN=b.ISBN
+GROUP BY MONTH(i.issue_date), b.title
+ORDER BY COUNT(i.issue_id) DESC LIMIT 3
+-- how to do limit 3 per group?
+
 -- Frequent Users Report --
 
 SELECT lname,
@@ -360,6 +377,14 @@ SELECT lname,
     AND MONTH(i.issue_date) = $month) AS users
 FROM USER
 ORDER BY users DESC LIMIT 5;
+
+SELECT MONTH( i.issue_date ) , s.fname, s.lname, COUNT( i.issue_id ) 
+FROM Issues AS i
+INNER JOIN Student_Faculty AS s ON s.username = i.username
+GROUP BY MONTH( i.issue_date ) , s.username
+ORDER BY COUNT( i.issue_id ) DESC 
+LIMIT 5
+-- count>10 and limit 5 per group
 
 -- Popular Subjects Report --
 
@@ -374,3 +399,12 @@ SELECT s.name,
 FROM Subject s
 ORDER BY copies DESC LIMIT 10;
 
+SELECT count(c.ISBN), b.subject, (
+  SELECT MONTH(MAX(return_date)) FROM Issues AS i
+  WHERE i.ISBN = c.ISBN AND i.copy_num = c.copy_num
+) AS LastDate
+FROM Book_Copy AS c
+INNER JOIN Book AS b ON b.ISBN = c.ISBN
+GROUP BY LastDate, b.subject
+ORDER BY count(c.ISBN) DESC LIMIT 3
+-- SAME PROBLEM  - limit per group
