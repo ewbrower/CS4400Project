@@ -5,7 +5,9 @@ host = "academic-mysql.cc.gatech.edu"
 username = "cs4400_Group_33"
 passwd = "3RMYn5Tp"
 
-#need for Search - 2 separate methods: 1. for searching for available books and 2. for searching for reserved books
+# for Search - 2 separate methods:
+# 1. for searching for available books and
+# 2. for searching for reserved books
 #implement reserve
 
 class Accessor:
@@ -24,7 +26,8 @@ class Accessor:
         self.db = db
 
     def login(self, user, password):
-        sql = 'SELECT * FROM User WHERE USERNAME = "%s" AND Password = "%s"'%(user,password)
+        sql = 'SELECT * FROM User WHERE USERNAME = "%s" AND '\
+            'Password = "%s"'%(user,password)
         resp = self.query(sql)
         if len(resp) == 1:
             return True
@@ -177,6 +180,7 @@ class Accessor:
     def searchforCheckOut(self, issueid):
         sql = 'SELECT username, copy_num, isbn FROM Issues WHERE issue_id="%s"'%issueid
         return self.query(sql)
+
         
     def returnBook(self, user, ISBN, copy = -1):
         # if copy = -1, then we have to find out what copy this
@@ -195,7 +199,8 @@ class Accessor:
         return True
 
     def lastUser(self, ISBN, copy):
-        sql = 'SELECT username FROM Issues WHERE ISBN = %s AND copy_num=%s ORDER BY issue_date DESC LIMIT 1'%(ISBN,copy)
+        sql = 'SELECT username FROM Issues WHERE ISBN = %s AND copy_num=%s'\
+            'ORDER BY issue_date DESC LIMIT 1'%(ISBN,copy)
         lastuer = self.query(sql)
         return lastuser
     
@@ -204,7 +209,8 @@ class Accessor:
         costSQL = 'SELECT cost FROM Book WHERE ISBN = "%s"'%ISBN
         cost = self.query(costSQL)[0][0]
         # get current penalty
-        penaltySQL = 'SELECT penalty FROM Student_Faculty WHERE username = "%s"'%user
+        penaltySQL = 'SELECT penalty FROM Student_Faculty WHERE '\
+            'username = "%s"'%user
         penalty = self.query(penaltySQL)[0][0]
         # solve for new penalty, convert to string
         if damaged:
@@ -215,11 +221,13 @@ class Accessor:
             'WHERE username = "%s";'%(newPen, user)
         self.query(penaltySQL)
         # get specific copy of book and do shit to it
-        sql = 'UPDATE Book_Copy SET damaged = 1 WHERE ISBN = "%s" AND copy_num = "%s"'%(ISBN,copy)
+        sql = 'UPDATE Book_Copy SET damaged = 1 WHERE ISBN = "%s" '\
+            'AND copy_num = "%s"'%(ISBN,copy)
         return self.query(sql)
 
     def updatePenalty(self, user):
-        sql = 'UPDATE Student_Faculty SET penalty = %s WHERE username = "%s"'%user
+        sql = 'UPDATE Student_Faculty SET penalty = %s '\
+            'WHERE username = "%s"'%user
         self.query(sql)
         return True
 
@@ -284,6 +292,16 @@ class Accessor:
             #print(item)
             pass
         return 1
+
+    def isFaculty(self, user):
+        # return True if staff, False otherwise
+        sql = 'SELECT count(1) FROM Student_Faculty WHERE username = "%s" '\
+        'AND faculty = 1'%user
+        res = self.query(sql)
+        if res[0][0] == 1:
+            return True
+        else:
+            return False
 
     def query(self, sql):
         db = self.db.cursor()
