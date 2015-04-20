@@ -139,11 +139,13 @@ class Accessor:
 ####################### REQUESTS
 
     def holdRequest(self, user, ISBN):
-        # also really hackish
         # bookData["available"] = books that aren't checked out
         # bookData["unheld"] = books that are checked out but not on hold
         copy = self.getNextAvailable(ISBN)
         if copy is None:
+            return False
+        # check to see if the user already requested this book (not copy)
+        if user in self.getFutureRequesters(ISBN):
             return False
         issueSQL = 'INSERT INTO Issues (username, issue_date, extension_date, '\
             'extension_count, copy_num, return_date, ISBN) VALUES '\
@@ -346,6 +348,13 @@ class Accessor:
         copy = self.query(sql)[0][0]
         return copy
 
+    def getFutureRequesters(self, ISBN):
+        sql = 'SELECT future_requester FROM Book_Copy WHERE ISBN = "%s"'%ISBN
+        futureList = []
+        for tinyList in self.query(sql):
+            futureList.append(tinyList[0])
+        return futureList
+
     def isFaculty(self, user):
         # return True if staff, False otherwise
         sql = 'SELECT count(1) FROM Student_Faculty WHERE username = "%s" '\
@@ -380,7 +389,20 @@ class Accessor:
             print(sql)
         db = self.db.cursor()
         resp = []
-        db.execute(sql)
+        try:
+            db.execute(sql)
+        except ProgrammingError as p:
+            print(p)
+        except DataError as d:
+            print(d)
+        except IntegrityError as i:
+            print(i)
+        except OperationalError as o:
+            print(o)
+        except NotSupportedError as n:
+            print(n)
+        except:
+            print("Unknown error")
         resp = self.clean(db.fetchall())
         if resp == []:
             return [[None]]
@@ -408,7 +430,7 @@ class Accessor:
 
 dis = Accessor()
 
-dis.holdRequest("ewbrower", "0-123-81479-0")
+print(dis.getFutureRequesters("0-123-81479-0"))
 
 
 
