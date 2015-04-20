@@ -43,13 +43,13 @@ class Accessor:
             return True
         return False
 	
-    def typeUser(self, user):
-            sql= 'SELECT * FROM Staff WHERE username ="%s"'%(user)
-            resp = self.query(sql)
-            if len(resp)==1:
-                return True
-            else:
-                return False
+    # def typeUser(self, user):
+    #     sql= 'SELECT * FROM Staff WHERE username ="%s"'%(user)
+    #     resp = self.query(sql)
+    #     if len(resp)==1:
+    #         return True
+    #     else:
+    #         return False
 	
 	
     def createProfile(self, user, fname, lname, dob, debarred, gender,
@@ -119,14 +119,11 @@ class Accessor:
         if not self.availableBook(ISBN, 'r'):
             return False
         copy = self.getNextAvailable(ISBN)
-        print(copy)
-        userExt = 5 # this needs to be a function
-        # need to find out how long a book can be checked out
         issueSQL = 'INSERT INTO Issues (username, issue_date, extension_date, '\
-        'extension_count, copy_num, return_date, ISBN) VALUES '\
-        '("%s", CURDATE(), DATE_ADD(CURDATE(), INTERVAL %s DAY), 1, %s,'\
-        ' DATE_ADD(CURDATE(), INTERVAL 10 DAY), "%s")'\
-        %(user, userExt, copy, ISBN)
+            'extension_count, copy_num, return_date, ISBN) VALUES '\
+            '("%s", CURDATE(), DATE_ADD(CURDATE(), INTERVAL 7 DAY), 1, %s,'\
+            ' DATE_ADD(CURDATE(), INTERVAL 10 DAY), "%s")'\
+        %(user, copy, ISBN)
         self.query(issueSQL)
         # now update that specific copy of the book
         reqSQL = 'UPDATE Book_Copy SET future_requester = "%s" '\
@@ -136,7 +133,7 @@ class Accessor:
 
     def requestExtension(self, user, issue):
         checkSQL = 'SELECT extension_count, copy_num, return_date, ISBN '\
-        'FROM Issues WHERE issue_id = %s'%issue
+            'FROM Issues WHERE issue_id = %s'%issue
         ans = self.query(checkSQL)
         print(ans)
         extCount = ans[0][0] + 1
@@ -177,8 +174,17 @@ class Accessor:
         sql = 'UPDATE '
         pass
 
+    def getIssueData(self, issue):
+        sql = 'SELECT issue_date, extension_date, return_date FROM Issues '\
+            'WHERE issue_id = %s'%issue
+        print(sql)
+        dateList = self.query(sql)
+        print(dateList)
+        return dateList
+
     def searchforCheckOut(self, issueid):
-        sql = 'SELECT username, copy_num, isbn FROM Issues WHERE issue_id="%s"'%issueid
+        sql = 'SELECT username, copy_num, isbn FROM Issues '\
+            'WHERE issue_id="%s"'%issueid
         return self.query(sql)
 
         
@@ -203,7 +209,9 @@ class Accessor:
             'ORDER BY issue_date DESC LIMIT 1'%(ISBN,copy)
         lastuer = self.query(sql)
         return lastuser
-    
+
+##### DAMAGED LOST BOOKS ###############
+
     def brokenBook(self, user, ISBN, copy, damaged):
         # get price of the book
         costSQL = 'SELECT cost FROM Book WHERE ISBN = "%s"'%ISBN
@@ -304,6 +312,9 @@ class Accessor:
             return False
 
     def query(self, sql):
+        # turn this on to print all SQL queries
+        if False:
+            print(sql)
         db = self.db.cursor()
         resp = []
         db.execute(sql)
@@ -361,11 +372,13 @@ dis = Accessor()
 # res = dis.getCopies("0-136-08620-9")
 # print(res)
 
-res = dis.submitRequest("ewbrower","0-123-81479-0")
-print(res)
+# res = dis.submitRequest("ewbrower","0-123-81479-0")
+# print(res)
 
 # res = dis.availableBook("0-123-81479-0")
 # print(res)
+
+print(dis.getIssueData(44))
 
 
 
