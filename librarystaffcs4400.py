@@ -4,6 +4,7 @@ import pymysql
 import urllib.request
 from urllib import *
 from access import Accessor
+import datetime
 
 class LibraryStaff:
 
@@ -65,14 +66,16 @@ class LibraryStaff:
         Label(self.Lost,text='Book Copy #').grid(row=1,column=3)
         Label(self.Lost,text='Current Time').grid(row=2,column=1)
 
-        isbn=StringVar()
-        copy=IntVar()
+        self.lostbook=StringVar()
+        self.lostcopy=StringVar()
         time=StringVar()
-
-        Entry(self.Lost,textvariable=isbn).grid(row=1,column=2,ipadx=30)
-        OptionMenu(self.Lost,copy,'1','2','3','4','5','6','7','8','9','10').grid(row=1,column=4)
+        
+        Entry(self.Lost,textvariable=self.lostbook).grid(row=1,column=2,ipadx=30)
+        OptionMenu(self.Lost,self.lostcopy,'1','2','3','4','5','6','7','8','9','10').grid(row=1,column=4)
         Entry(self.Lost,textvariable=time,state='readonly').grid(row=2,column=2,ipadx=20)
 
+        time.set(datetime.datetime.now())
+        
         Button(self.Lost,text='Look for the last user', command=self.lastuser).grid(row=3,column=1,columnspan=4,sticky=E+W)
 
         ttk.Separator(self.Lost, orient=HORIZONTAL).grid(row=5,column=0,columnspan=6, sticky=E+W)
@@ -80,10 +83,10 @@ class LibraryStaff:
         Label(self.Lost,text='Last User of the Book').grid(row=7,column=1)
         Label(self.Lost,text='Amount to be charged').grid(row=8,column=1)
 
-        lastuser=StringVar()
+        self.lastuser=StringVar()
         amount=StringVar()
         
-        Entry(self.Lost,textvariable=lastuser,state='readonly').grid(row=7,column=2)
+        Entry(self.Lost,textvariable=self.lastuser,state='readonly').grid(row=7,column=2)
         Entry(self.Lost,textvariable=amount).grid(row=8,column=2)
 
         Button(self.Lost,text='Submit',command=self.submitchange).grid(row=9,column=4)
@@ -94,7 +97,10 @@ class LibraryStaff:
         self.Page.deiconify()
 
     def lastuser(self):
-        pass
+        isbn=self.lostbook.get()
+        copy=self.lostcopy.get()
+        lastuser=self.a.lastUser(isbn, copy)
+        self.lastuser.set(lastuser)
 
     def submitchange(self):
         pass
@@ -165,9 +171,9 @@ class LibraryStaff:
         Label(f1, text='Subject').grid(row=1,column=3)
         Label(f1, text='Subject').grid(row=2,column=3)
         Label(f1, text='Subject').grid(row=3,column=3)
-        OptionMenu(f1,self.subj1,'subjects').grid(row=1,column=4)
-        OptionMenu(f1,self.subj2, 'subjects').grid(row=2,column=4)
-        OptionMenu(f1,self.subj3, 'subjects').grid(row=3,column=4)
+        OptionMenu(f1,self.subj1,'Mathematics','Fiction','Boring','Computer Science').grid(row=1,column=4)
+        OptionMenu(f1,self.subj2, 'Mathematics','Fiction','Boring','Computer Science').grid(row=2,column=4)
+        OptionMenu(f1,self.subj3, 'Mathematics','Fiction','Boring','Computer Science').grid(row=3,column=4)
 
         Button(f1, text='Show Report', command=self.showreport).grid(row=4,column=1,columnspan=4,sticky=E+W)
         Button(f1, text='Back', command=self.damtoreports).grid(row=5,column=1,columnspan=4, sticky=E+W)

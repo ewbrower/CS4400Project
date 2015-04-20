@@ -7,7 +7,6 @@ passwd = "3RMYn5Tp"
 
 #need for Search - 2 separate methods: 1. for searching for available books and 2. for searching for reserved books
 #implement reserve
-#method for returning the type of user the user logged on is as in student or faculty - for determining return dates
 
 class Accessor:
     """This class accesses the MySQL database"""
@@ -159,6 +158,11 @@ class Accessor:
         self.brokenBook(user, ISBN, copy, False)
         return True
 
+    def lastUser(self, ISBN, copy):
+        sql = 'SELECT username FROM Issues WHERE ISBN = %s AND copy_num=%s ORDER BY issue_date DESC LIMIT 1'%(ISBN,copy)
+        lastuer=self.query(sql)
+        return lastuser
+    
     def brokenBook(self, user, ISBN, copy, damaged):
         # get price of the book
         costSQL = 'SELECT cost FROM Book WHERE ISBN = "%s"'%ISBN
