@@ -206,11 +206,15 @@ class Accessor:
             'FROM Book b WHERE ISBN = "%s"'%ISBN
         return self.query(sql)
 
-    def checkoutBook(self, issue):
-        # check if a book has been on hold for three days
+    def checkData(self, issue):
         checkSQL = 'SELECT username, issue_date, copy_num, isbn FROM Issues '\
             'WHERE issue_id="%s"'%issue
         user, issueDate, copy_num, ISBN = self.query(checkSQL)[0]
+        return user, issueDate, copy_num, ISBN
+
+    def checkoutBook(self, issue):
+        # check if a book has been on hold for three days
+        user, issueDate, copy_num, ISBN = self.checkData(issue)
         diff = datetime.date.today() - issueDate
         if diff.days > 3:
             return False
