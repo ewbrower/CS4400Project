@@ -347,7 +347,7 @@ class Library:
         self.holdRequest.withdraw()
         self.Search.deiconify()
 
-    def holdrequest(self):
+    def holdrequest(self): ####TEST
         booktohold=self.var.get()
         user=self.Username.get()
         abc=self.a.submitRequest(user,booktohold[0])
@@ -395,11 +395,9 @@ class Library:
 
         b2=Button(self.RequestExtension,text='Submit', command=self.requestEx).grid(row=7,column=5)
 
-    def calculateEx(self):
+    def calculateEx(self): #TESTT
         issueid=self.issueId.get()
         data=self.a.getIssueData(issueid)
-        print(data[0])
-        
         self.checkoutDate.set(data[0])
         self.currentExtension.set(data[1])
         self.returnDate.set(data[2])
@@ -407,7 +405,7 @@ class Library:
         self.newreturnDate.set(datetime.datetime.strftime(datetime.datetime.now()+datetime.timedelta(days=17),'%m/%d/%y'))
 
         
-    def requestEx(self):
+    def requestEx(self): ###TEST
         user=self.Username.get()
         issueid=self.issueId.get()
         self.a.requestExtension(user,issueid)

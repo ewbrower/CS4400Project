@@ -195,7 +195,7 @@ class Accessor:
         # print(today)
         issueSQL = 'SELECT username, copy_num return_date, ISBN '\
             'FROM Issues WHERE issue_id = %s'%issue
-        user, copy retDate, ISBN = self.query(issueSQL)[0]
+        user, copy, retDate, ISBN = self.query(issueSQL)[0]
         print(user)
         print(copy)
         print(retDate)
@@ -222,10 +222,11 @@ class Accessor:
         return True
 
     def lastUser(self, ISBN, copy):
-        sql = 'SELECT username FROM Issues WHERE ISBN = %s AND copy_num=%s'\
+        sql = 'SELECT username FROM Issues WHERE ISBN = "%s" AND copy_num="%s"'\
             'ORDER BY issue_date DESC LIMIT 1'%(ISBN,copy)
-        lastuer = self.query(sql)
-        return lastuser
+        lastuser = self.query(sql)
+        name='SELECT username, fname, lname FROM Student_Faculty WHERE username="%s"'%lastser
+        return self.query(name)
 
     def brokenBook(self, user, ISBN, copy, damaged):
         # get price of the book
@@ -248,9 +249,9 @@ class Accessor:
             'AND copy_num = "%s"'%(ISBN,copy)
         return self.query(sql)
 
-    def updatePenalty(self, user):
+    def updatePenalty(self, user, penalty):
         sql = 'UPDATE Student_Faculty SET penalty = %s '\
-            'WHERE username = "%s"'%user
+            'WHERE username = "%s"'%(penalty,user)
         self.query(sql)
         return True
 
