@@ -422,7 +422,7 @@ class Accessor:
     def query(self, sql):
         # turn this on to print all SQL queries
         if True:
-            print(sql)
+            print("\n" + sql)
         db = self.db.cursor()
         resp = []
         try:
@@ -466,7 +466,11 @@ class Accessor:
 
 dis = Accessor()
 
-print(dis.getFutureRequesters("0-123-81479-0"))
+
+
+
+
+
 
 
 
