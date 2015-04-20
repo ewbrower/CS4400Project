@@ -187,27 +187,21 @@ class Accessor:
         sql = 'SELECT username, copy_num, isbn FROM Issues '\
             'WHERE issue_id="%s"'%issue
         return self.query(sql)
-
         
     def returnBook(self, issue):
         # check to see if current date is past return date,
         today = datetime.date.today()
         # print(today)
-        issueSQL = 'SELECT username, copy_num return_date, ISBN '\
+        issueSQL = 'SELECT username, copy_num, return_date, ISBN '\
             'FROM Issues WHERE issue_id = %s'%issue
-        user, copy retDate, ISBN = self.query(issueSQL)[0]
-        print(user)
-        print(copy)
-        print(retDate)
-        print(ISBN)
+        user, copy, retDate, ISBN = self.query(issueSQL)[0]
         if retDate < today:
-            diff = today - retDate
-            fine = diff * 0.5
             # this means they turned it in late
-            print("Lo")
-            # go get the fine
-        retSQL = 'UPDATE Book_Copy WHERE ISBN = "%s" '\
-            'AND copy_num = %s'%ISBN, copy
+            diff = today - retDate
+            amount = diff * 0.5
+            self.addPenalty(user, amount)
+        retSQL = 'UPDATE Book_Copy SET checked_out = 0 '\
+            'WHERE ISBN = "%s" AND copy_num = %s'%(ISBN, copy)
         self.query(retSQL)
         return True
 
@@ -232,17 +226,11 @@ class Accessor:
         costSQL = 'SELECT cost FROM Book WHERE ISBN = "%s"'%ISBN
         cost = self.query(costSQL)[0][0]
         # get current penalty
-        penaltySQL = 'SELECT penalty FROM Student_Faculty WHERE '\
-            'username = "%s"'%user
-        penalty = self.query(penaltySQL)[0][0]
-        # solve for new penalty, convert to string
         if damaged:
-            newPen = str(float(penalty) + float(cost) * 0.5)
+            amount = float(cost) * 0.5
         else:
-            newPen = str(float(penalty) + float(cost))
-        penaltySQL = 'UPDATE Student_Faculty SET penalty = %s '\
-            'WHERE username = "%s";'%(newPen, user)
-        self.query(penaltySQL)
+            amount = float(cost)
+        self.addPenalty(user, amount)
         # get specific copy of book and do shit to it
         sql = 'UPDATE Book_Copy SET damaged = 1 WHERE ISBN = "%s" '\
             'AND copy_num = "%s"'%(ISBN,copy)
@@ -325,6 +313,16 @@ class Accessor:
             return True
         else:
             return False
+
+    def addPenalty(self, user, amount):
+        penaltySQL = 'SELECT penalty FROM Student_Faculty WHERE '\
+            'username = "%s"'%user
+        penalty = self.query(penaltySQL)[0][0]
+        # solve for new penalty, convert to string
+        newPen = str(float(penalty) + amount)
+        penaltySQL = 'UPDATE Student_Faculty SET penalty = %s '\
+            'WHERE username = "%s";'%(newPen, user)
+        self.query(penaltySQL)
 
     def query(self, sql):
         # turn this on to print all SQL queries
