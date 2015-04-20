@@ -70,15 +70,19 @@ class Accessor:
             sql = self.searchAuthor(terms)
         else:
             sql = self.searchBook(terms)
+        # use the sql to get a list of ISBNs
         res = self.query(sql)
-        if res == []:
-            return False
-        elif len(res) == 1:
-            ISBN = self.query(sql)[0][0]
-            return self.selectBooks(ISBN)
-        else:
+        isbnList = []
+        for item in res:
+            if item[0] is not None:
+                isbnList.append(item[0])
+        # select available and unheld books based on ISBN
+        if isbnList == []:
+            return None
+        elif len(isbnList) >= 1:
             resList = []
-            for ISBN in res[0]:
+            for ISBN in isbnList:
+                print(self.selectBooks(ISBN))
                 resList.append(self.selectBooks(ISBN))
             return resList
 
@@ -102,31 +106,16 @@ class Accessor:
         return sql
 
     def selectBooks(self, ISBN):
-        avail = self.availableCopies(ISBN)
-        held = self.heldCopies(ISBN)
-        return avail, held
-
-    def availableCopies(self, ISBN):
-        sql = 'SELECT count(*) FROM Book_Copy WHERE checked_out = 0 '\
-            'AND ISBN = "%s"'%ISBN
-        return self.query(sql)
-
-    def heldCopies(self, ISBN):
-        sql = 'SELECT count(*) FROM Book_Copy WHERE future_requester IS NULL '\
-            'AND ISBN = "%s"'%ISBN
-        return self.query(sql)
-
-####################### COPIES
-
-    def getCopies(self, ISBN, onlyAvailable = False):
-        if onlyAvailable:
-            sql = 'SELECT count(*) FROM Book_Copy WHERE ISBN = "%s" '\
-                    'AND checked_out = 0'%ISBN
-        else:
-            sql = 'SELECT count(*) FROM Book_Copy WHERE ISBN = "%s"'%ISBN
-        # return the only item in the query list and the SQL SELECT list
-        # return the whole query return
-        return self.query(sql)
+        availSQL = 'SELECT b.ISBN, (SELECT count(*) FROM Book_Copy AS c '\
+            'WHERE c.checked_out = 0 AND b.ISBN = c.ISBN) AS Count '\
+            'FROM Book AS b WHERE ISBN = "%s";'%ISBN
+        heldSQL = 'SELECT b.ISBN, (SELECT count(*) FROM Book_Copy AS c '\
+            'WHERE c.future_requester IS NULL AND b.ISBN = c.ISBN) AS Count '\
+            'FROM Book AS b WHERE ISBN = "%s";'%ISBN
+        avail = self.query(availSQL)[0]
+        unheld = self.query(heldSQL)[0]
+        res = {"ISBN" : ISBN, "available" : avail[1], "unheld" : unheld[1]}
+        return res
 
 ####################### REQUESTS
 
@@ -181,8 +170,11 @@ class Accessor:
 
     def futureHoldRequest(self, user, ISBN):
         # get copy num sorted by available date
+        sql = 'SELECT b.ISBN, (SELECT copy_num FROM Book_Copy AS c '\
+            'WHERE c.checked_out = 0 AND b.ISBN = c.ISBN) AS Copy '\
+            'FROM Book AS b WHERE ISBN = "%s" ORDER BY c.return_date'%ISBN
+        print(self.query(sql))
         # take out books that already have a future hold request
-        pass
 
     def locateBook(self, ISBN):
         sql = 'SELECT shelf, subject, '\
@@ -191,11 +183,27 @@ class Accessor:
             'FROM Book b WHERE ISBN = "%s"'%ISBN
         return self.query(sql)
 
-    def checkoutBook(self, user, ISBN, copy):
+    def checkoutBook(self, issue):
         # check if a book has been on hold for three days
+        checkSQL = 'SELECT username, copy_num, isbn FROM Issues '\
+            'WHERE issue_id="%s"'%issue
+        user, copy_num, ISBN = self.query(checkSQL)[0]
+        # still needs work
+        # check if that copy is damaged
+        damSQL = 'SELECT damaged FROM Book_Copy WHERE ISBN = "%s" '\
+            "AND copy_num = %s"%(ISBN, copy_num)
+        dam = self.query(damSQL)[0][0]
+        print(dam)
+        if dam == 1:
+            return False
         # then update Issues, add estimated return date +14
-        sql = 'UPDATE '
-        pass
+        issueSQL = 'UPDATE Issues SET return_date = DATE_ADD(return_date,'\
+            'INTERVAL 14 DAY) WHERE issue_id = %s'%issue
+        self.query(issueSQL)
+        copySQL = 'UPDATE Book_Copy SET checked_out = 1 WHERE ISBN = "%s" '\
+            'AND copy_num = %s'%(ISBN, copy_num)
+        self.query(copySQL)
+        return True
 
     def getIssueData(self, issue):
         sql = 'SELECT issue_date, extension_date, return_date FROM Issues '\
@@ -204,11 +212,6 @@ class Accessor:
         dateList = self.query(sql)
         print(dateList)
         return dateList
-
-    def searchforCheckOut(self, issue):
-        sql = 'SELECT username, copy_num, isbn FROM Issues '\
-            'WHERE issue_id="%s"'%issue
-        return self.query(sql)
         
     def returnBook(self, issue):
         # check to see if current date is past return date,
@@ -363,6 +366,8 @@ class Accessor:
         resp = []
         db.execute(sql)
         resp = self.clean(db.fetchall())
+        if resp == []:
+            return [[None]]
         return resp
 
     def clean(self, mess):
@@ -387,7 +392,16 @@ class Accessor:
 
 dis = Accessor()
 
-print(dis.search(title = "Database"))
+# this one broke because of penalties
+# dis.returnBook("78")
+
+dis.checkoutBook("42")
+
+# dis.checkoutBook("78")
+
+
+
+
 
 
 

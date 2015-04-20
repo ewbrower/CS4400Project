@@ -374,3 +374,45 @@ SELECT s.name,
 FROM Subject s
 ORDER BY copies DESC LIMIT 10;
 
+
+
+
+
+
+
+-- more shit
+
+SELECT b.ISBN, (
+  SELECT count(*)
+  FROM Book_Copy AS c
+  WHERE c.checked_out = 0 AND b.ISBN = c.ISBN) AS Count
+FROM Book AS b;
+
+SELECT b.ISBN, (
+  SELECT count(*)
+  FROM Book_Copy AS c
+  WHERE c.future_requester IS NULL AND b.ISBN = c.ISBN) AS Count
+FROM Book AS b;
+
+SELECT b.title, i.issue_id, b.ISBN, c.copy_num, i.return_date
+FROM Book AS b
+INNER JOIN Book_Copy AS c ON b.ISBN = c.ISBN
+INNER JOIN Issues AS i ON i.ISBN = b.ISBN AND c.copy_num = i.copy_num
+ORDER BY i.issue_id;
+
+SELECT b.title, b.ISBN
+FROM Book AS b
+INNER JOIN Book_Copy AS c
+WHERE b.ISBN = c.ISBN AND c.checked_out = 1;
+
+
+
+
+
+
+
+
+
+
+
+
