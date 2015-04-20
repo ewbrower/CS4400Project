@@ -348,7 +348,12 @@ class Library:
         self.Search.deiconify()
 
     def holdrequest(self):
-        booktohold=self.var
+        booktohold=self.var.get()
+        user=self.Username.get()
+        abc=self.a.submitRequest(user,booktohold[0])
+        if abc==True:
+            messagebox.showinfo('Congrats!','Your hold has been placed')
+            
 
     def RequestExtension(self):
         self.Menu.withdraw()
@@ -360,7 +365,7 @@ class Library:
         Label(self.RequestExtension, text='Enter your issue_id').grid(row=2, column=0, sticky=E)
         self.issueID = StringVar()
         e1=Entry(self.RequestExtension, textvariable=self.issueID).grid(row=2,column=1,ipadx=30)        
-        b1=Button(self.RequestExtension, text='Submit').grid(row=2,column=4)
+        b1=Button(self.RequestExtension, text='Submit', command=self.calcEx).grid(row=2,column=4)
         ttk.Separator(self.RequestExtension,orient=HORIZONTAL).grid(row=3,column=0,columnspan=6,sticky="EW")
 
         Label(self.RequestExtension, text='Original Checkout Date').grid(row=4,column=0,sticky=E)
@@ -388,7 +393,25 @@ class Library:
         e6=Entry(self.RequestExtension,textvariable=self.newReturnDate,state='readonly')
         e6.grid(row=6,column=5,ipadx=30)
 
-        b2=Button(self.RequestExtension,text='Submit').grid(row=7,column=5)
+        b2=Button(self.RequestExtension,text='Submit', command=self.requestEx).grid(row=7,column=5)
+
+    def calculateEx(self):
+        issueid=self.issueId.get()
+        data=self.a.getIssueData(issueid)
+        print(data[0])
+        
+        self.checkoutDate.set(data[0])
+        self.currentExtension.set(data[1])
+        self.returnDate.set(data[2])
+        self.newExtension.set(datetime.datetime.strftime(datetime.datetime.now(),'%m/%d/%y'))
+        self.newreturnDate.set(datetime.datetime.strftime(datetime.datetime.now()+datetime.timedelta(days=17),'%m/%d/%y'))
+
+        
+    def requestEx(self):
+        user=self.Username.get()
+        issueid=self.issueId.get()
+        self.a.requestExtension(user,issueid)
+        
 
     def FutureHoldRequest(self):
         self.Menu.withdraw()
