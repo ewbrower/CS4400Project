@@ -1,6 +1,5 @@
 import pymysql
 from decimal import Decimal
-import datetime
 
 host = "academic-mysql.cc.gatech.edu"
 username = "cs4400_Group_33"
@@ -95,14 +94,6 @@ class Accessor:
         resp = self.query(sql)
         return resp
 
-    def searchPage(self, ISBN = None, title = None, author = None,
-            publisher = None, edition = None):
-        terms = locals()
-        terms.pop("self", None)
-        # SELECT FROM BOOK
-        # WHERE this LIKE terms[param]
-        # AND checked_
-
     def selectBook(self, ISBN, copy = -1):
         #if copy = -1, then copy number doesn't matter
         sql = 'SELECT * FROM Book_Copy WHERE ISBN = "%s"'%ISBN
@@ -120,7 +111,7 @@ class Accessor:
         # return the whole query return
         return self.query(sql)
 
-    def requestHold(self, user, ISBN):
+    def submitRequest(self, user, ISBN):
         # also really hackish
         if not self.availableBook(ISBN, 'r'):
             return False
@@ -139,39 +130,6 @@ class Accessor:
         'WHERE ISBN = "%s" AND copy_num = %s'%(user, ISBN, copy)
         self.query(reqSQL)
         return True
-
-    def requestExtension(self, user, issue):
-        checkSQL = 'SELECT extension_count, copy_num, return_date, ISBN '\
-        'FROM Issues WHERE issue_id = %s'%issue
-        ans = self.query(checkSQL)
-        print(ans)
-        extCount = ans[0][0] + 1
-        copy_num = ans[0][1]
-        retDate = ans[0][2] + datetime.timedelta(7)
-        ISBN = ans[0][3]
-        print(extCount)
-        print(copy_num)
-        print(retDate)
-        print(ISBN)
-        # make sure they aren't extending too many times
-        if extCount == 3 and self.isFaculty(user) == False:
-            print("this")
-            return False
-        elif extCount == 6:
-            return False
-        # make sure the book doesn't have a hold on it
-        holdSQL = 'SELECT future_requester FROM Book_Copy WHERE ISBN = "%s" '\
-            'AND copy_num = %s'%(ISBN, copy_num)
-        future = self.query(holdSQL)
-        print(future)
-        if future != "NULL":
-            print("this")
-            return False
-        extSQL = 'UPDATE Issues SET extension_count = %s, return_date = "%s" '\
-            'WHERE issue_id = %s'%(extCount, retDate, issue)
-        self.query(extSQL)
-        return True
-
 
     def locateBook(self, ISBN):
         sql = 'SELECT shelf, subject, '\
@@ -224,11 +182,6 @@ class Accessor:
         sql = 'UPDATE Book_Copy SET damaged = 1 WHERE ISBN = "%s" AND copy_num = "%s"'%(ISBN,copy)
         return self.query(sql)
 
-    def updatePenalty(self, user):
-        sql = 'UPDATE Student_Faculty SET penalty = %s WHERE username = "%s"'%user
-        self.query(sql)
-        return True
-
 ############## REPORTS ###############
 
     def generateReport(self):
@@ -264,16 +217,6 @@ class Accessor:
         res = self.query(sql)
         # if there is one result, the user already exists in the table
         if len(res) == 1:
-            return True
-        else:
-            return False
-
-    def isFaculty(self, user):
-        # return True if staff, False otherwise
-        sql = 'SELECT count(1) FROM Student_Faculty WHERE username = "%s" '\
-        'AND faculty = 1'%user
-        res = self.query(sql)
-        if res[0][0] == 1:
             return True
         else:
             return False
@@ -359,24 +302,16 @@ dis = Accessor()
 # res = dis.getCopies("0-136-08620-9")
 # print(res)
 
-# res = dis.submitRequest("ewbrower","0-123-81479-0")
-# print(res)
+res = dis.submitRequest("ewbrower","0-123-81479-0")
+print(res)
 
 # res = dis.availableBook("0-123-81479-0")
 # print(res)
 
 
-res = dis.requestHold("ewbrower", "0-132-56870-5")
-# res = dis.requestExtension("ewbrower", 42)
-print(res)
 
 # print(dis.isFaculty("ewbrower"))
 # print(dis.isFaculty("wchurchill"))
-
-
-
-
-
 
 
 

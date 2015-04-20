@@ -33,25 +33,37 @@ class LibraryStaff:
         Label(self.CheckOut, text='Copy#').grid(row=2,column=3)
         Label(self.CheckOut, text='Estimated Return Date').grid(row=3,column=3)
 
-        issueID=StringVar()
-        ISBN=StringVar()
-        CheckOut=StringVar()
-        UserName=StringVar()
-        Copyno=IntVar()
-        ReturnDate=StringVar()
+        self.isid=StringVar()
+        self.isBN= StringVar()
+        self.CODate=StringVar()
+        self.un= StringVar()
+        self.copyn=StringVar()
+        self.erd=StringVar()
+        
+        Entry(self.CheckOut,textvariable=self.isid).grid(row=1,column=2, ipadx=30)
+        Entry(self.CheckOut,textvariable=self.isBN, state='readonly').grid(row=2,column=2, ipadx=30)
+        Entry(self.CheckOut,textvariable=self.CODate,state='readonly').grid(row=3,column=2, ipadx=30)
+        Entry(self.CheckOut,textvariable=self.un,state='readonly').grid(row=1,column=4, ipadx=30)
+        Entry(self.CheckOut,textvariable=self.copyn,state='readonly').grid(row=2,column=4, ipadx=30)
+        Entry(self.CheckOut,textvariable=self.erd,state='readonly').grid(row=3,column=4, ipadx=30)
 
-        Entry(self.CheckOut,textvariable=issueID).grid(row=1,column=2, ipadx=30)
-        Entry(self.CheckOut,textvariable=ISBN, state='readonly').grid(row=2,column=2, ipadx=30)
-        Entry(self.CheckOut,textvariable=CheckOut,state='readonly').grid(row=3,column=2, ipadx=30)
-        Entry(self.CheckOut,textvariable=UserName,state='readonly').grid(row=1,column=4, ipadx=30)
-        Entry(self.CheckOut,textvariable=Copyno,state='readonly').grid(row=2,column=4, ipadx=30)
-        Entry(self.CheckOut,textvariable=ReturnDate,state='readonly').grid(row=3,column=4, ipadx=30)
-
+        Button(self.CheckOut, text='Find IssueID', command=self.updatecheckoutPage).grid(row=5, column=1,columnspan=4, sticky=E+W)
         Button(self.CheckOut,text='Confirm', command=self.checkout).grid(row=6, column=1, columnspan=4, sticky=E+W)
         Button(self.CheckOut, text='Cancel', command=self.backfromcheckout).grid(row=7,column=1,columnspan=4, sticky=E+W)
 
+    def updatecheckoutPage(self):
+        issueid=self.isid.get()
+        data=self.a.searchforCheckOut(issueid)
+        self.isBN.set(data[2])
+        self.un.set(data[0])
+        self.copyn.set(data[1])
+        date=datetime.datetime.strftime(datetime.datetime.now(),'%m/%d/%y')
+        self.CODate.set(date)
+        self.erd.set(datetime.datetime.strftime(datetime.datetime.now()+datetime.timedelta(days=14),'%m/%d/%y'))
+        
     def checkout(self):
-        pass
+        self.a.checkoutBook(uname,isbn,copynum)
+
 
     def backfromcheckout(self):
         self.CheckOut.withdraw()
@@ -138,7 +150,15 @@ class LibraryStaff:
         self.Page.deiconify()
 
     def returnb(self):
-        pass
+        issueID=self.issueID.get()
+        isbn=self.ISBN.get()
+        YN=self.YN.get()
+        copynum=self.copyNum.get()
+        usern=self.userName.get()
+        self.a.returnBook(usern,isbn, copynum)
+        if YN=='Y':
+            self.a.submitDamagedBook(usern, isbn, copynum)
+        
         
     def ReportsPage(self):
         self.Page.withdraw()
