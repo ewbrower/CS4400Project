@@ -283,8 +283,8 @@ INSERT INTO Issues (username, issue_id, issue_date, extension_date,
     ("bbaggins", 13, "20150101", NULL, 0, 2, "20150114", "1-285-19614-7"),
     ("bbaggins", 14, "20150101", NULL, 0, 3, "20150114", "1-285-19614-7"),
     ("bbaggins", 15, "20150115", NULL, 0, 1, "20150128", "1-285-19614-7"),
-    ("bbaggins", 16, "20150101", NULL, 0, 1, "20150114", "0-321-88407-8")
-    ("bbaggins", 17, "20150101", NULL, 0, 1, "20150114", "0-553-59354-4"),
+    ("bbaggins", 16, "20150101", "20150114", 1, 1, "20150127", "0-321-88407-8")
+    ("bbaggins", 17, "20150101", "20150114", 1, 1, "20150127", "0-553-59354-4"),
     ("fbaggins", 18, "20150101", NULL, 0 2, "20150114", "0-136-08620-9"),
     ("sgamgee", 19, "20150101", NULL, 0, 5, "20150114", "1-435-13211-4"),
     ("sgamgee", 20, "20150101", NULL, 0, 3, "20150114", "0-136-08620-9"),
@@ -359,19 +359,6 @@ INSERT INTO Issues (username, issue_id, issue_date, extension_date,
     ("cdegaulle", 89, "20150201", NULL, 0, 2, "20150214", "0-140-44430-0"),
     ("cdegaulle", 90, "20150215", NULL, 0, 1, "20150228", "0-140-44430-0"),
     ("cdegaulle", 91, "20150215", NULL, 0, 2, "20150228", "0-140-44430-0"),
-    ("cdegaulle", 92, "20150201", NULL, 0, 1, "20150214", "1-435-13211-4"),
-    ("froosevelt", 93, "20150201", NULL, 0, 1, "20150214", "0-132-56870-5"),
-    ("tstauning", 94, "20150201", NULL, 0, 1, "20150214", "0-321-88407-8");
-    
-     username varchar(50) NOT NULL,
-  issue_id int NOT NULL AUTO_INCREMENT,
-  issue_date date NOT NULL,
-  extension_date date NULL,
-  extension_count int NOT NULL,
-  copy_num int NOT NULL,
-  return_date date NOT NULL,
-  ISBN varchar(13) NOT NULL,
-  PRIMARY KEY(issue_id),
-  FOREIGN KEY(username) REFERENCES Student_Faculty(username),
-  FOREIGN KEY(ISBN, copy_num) REFERENCES Book_Copy(ISBN, copy_num),
-  FOREIGN KEY(ISBN) REFERENCES Book_Copy(ISBN));
+    ("cdegaulle", 92, "20150201", "20150214", 1, 1, "20150226", "1-435-13211-4"),
+    ("froosevelt", 93, "20150201", "20150214", 1, 1, "20150226", "0-132-56870-5"),
+    ("tstauning", 94, "20150201", "20150214", 1, 1, "20150226", "0-321-88407-8");
