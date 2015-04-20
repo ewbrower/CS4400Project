@@ -350,7 +350,7 @@ class Library:
     def holdrequest(self): ####TEST
         booktohold=self.var.get()
         user=self.Username.get()
-        abc=self.a.submitRequest(user,booktohold[0])
+        abc=self.a.holdRequest(user,booktohold[0])
         if abc==True:
             messagebox.showinfo('Congrats!','Your hold has been placed')
             

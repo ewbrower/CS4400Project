@@ -26,6 +26,25 @@ class Accessor:
             raise
         self.db = db
 
+    # lastUser
+    # returnBook
+    # submitDamagedBook
+    # checkoutBook
+    # searchForCheckOut
+    # updatePenalty
+    # typeUser
+    # login
+    # createAccount
+    # createProfile
+    # search
+    # getCopies
+    # holdRequest
+    # getIssueData
+    # requestExtension
+    # locateBook
+
+########## USER / PROFILE MANAGEMENT ###########
+
     def login(self, user, password):
         sql = 'SELECT * FROM User WHERE USERNAME = "%s" AND '\
             'Password = "%s"'%(user,password)
@@ -59,7 +78,7 @@ class Accessor:
             return True
         return False
 
-########################### NEW SEARCH #####################
+########################### SEARCH #####################
 
     def search(self, ISBN = None, title = None, author = None,
             publisher = None, edition = None):
@@ -119,39 +138,43 @@ class Accessor:
 
 ####################### REQUESTS
 
-    def submitRequest(self, user, ISBN):
-        # also really hackish
-        if not self.availableBook(ISBN, 'r'):
-            return False
+    def holdRequest(self, user, ISBN):
+        # bookData["available"] = books that aren't checked out
+        # bookData["unheld"] = books that are checked out but not on hold
         copy = self.getNextAvailable(ISBN)
+        if copy is None:
+            return False
+        # check to see if the user already requested this book (not copy)
+        if user in self.getFutureRequesters(ISBN):
+            return False
         issueSQL = 'INSERT INTO Issues (username, issue_date, extension_date, '\
             'extension_count, copy_num, return_date, ISBN) VALUES '\
             '("%s", CURDATE(), DATE_ADD(CURDATE(), INTERVAL 7 DAY), 1, %s,'\
-            ' DATE_ADD(CURDATE(), INTERVAL 10 DAY), "%s")'\
-        %(user, copy, ISBN)
+            ' DATE_ADD(CURDATE(), INTERVAL 10 DAY), "%s")'%(user, copy, ISBN)
         self.query(issueSQL)
         # now update that specific copy of the book
-        reqSQL = 'UPDATE Book_Copy SET future_requester = "%s" '\
+        reqSQL = 'UPDATE Book_Copy SET future_requester = "%s", hold = 1 '\
         'WHERE ISBN = "%s" AND copy_num = %s'%(user, ISBN, copy)
         self.query(reqSQL)
         return True
 
-    def requestExtension(self, user, issue):
-        checkSQL = 'SELECT extension_count, copy_num, return_date, ISBN '\
+    def requestExtension(self, issue):
+        checkSQL = 'SELECT username, extension_count, copy_num, return_date, ISBN '\
             'FROM Issues WHERE issue_id = %s'%issue
         ans = self.query(checkSQL)
         print(ans)
-        extCount = ans[0][0] + 1
-        copy_num = ans[0][1]
-        retDate = ans[0][2] + datetime.timedelta(7)
-        ISBN = ans[0][3]
+        user = ans[0][0]
+        extCount = ans[0][1] + 1
+        copy_num = ans[0][2]
+        retDate = ans[0][3] + datetime.timedelta(7)
+        ISBN = ans[0][4]
         # print(extCount)
         # print(copy_num)
-        # print(retDate)
+        print(retDate)
         # print(ISBN)
         # make sure they aren't extending too many times
         if extCount == 3 and self.isFaculty(user) == False:
-            print("this")
+            print("extended three times already")
             return False
         elif extCount == 6:
             return False
@@ -233,21 +256,6 @@ class Accessor:
         return True
 
 ##### DAMAGED LOST BOOKS ###############
-
-    def submitDamagedBook(self, user, ISBN, copy):
-        self.brokenBook(user, ISBN, copy, True)
-        return True
-
-    def submitLostBook(self, user, ISBN, copy):
-        self.brokenBook(user, ISBN, copy, False)
-        return True
-
-    def lastUser(self, ISBN, copy):
-        sql = 'SELECT username FROM Issues WHERE ISBN = %s AND copy_num=%s'\
-            'ORDER BY issue_date DESC LIMIT 1'%(ISBN,copy)
-        lastuser = self.query(sql)
-        return lastuser
-
     def brokenBook(self, user, ISBN, copy, damaged):
         # get price of the book
         costSQL = 'SELECT cost FROM Book WHERE ISBN = "%s"'%ISBN
@@ -263,6 +271,20 @@ class Accessor:
             'AND copy_num = "%s"'%(ISBN,copy)
         return self.query(sql)
 
+    def lastUser(self, ISBN, copy):
+        sql = 'SELECT username FROM Issues WHERE ISBN = %s AND copy_num=%s'\
+            'ORDER BY issue_date DESC LIMIT 1'%(ISBN,copy)
+        lastuser = self.query(sql)
+        return lastuser
+
+    def submitDamagedBook(self, user, ISBN, copy):
+        self.brokenBook(user, ISBN, copy, True)
+        return True
+
+    def submitLostBook(self, user, ISBN, copy):
+        self.brokenBook(user, ISBN, copy, False)
+        return True
+
     def updatePenalty(self, user):
         sql = 'UPDATE Student_Faculty SET penalty = %s '\
             'WHERE username = "%s"'%user
@@ -272,6 +294,7 @@ class Accessor:
 ############## REPORTS ###############
 
     def damageReport(self):
+<<<<<<< HEAD
         sql = 'SELECT count(c.ISBN), b.subject, ( '\
         'SELECT MONTH(MAX(return_date)) FROM Issues AS i '\
         'WHERE i.ISBN = c.ISBN AND i.copy_num = c.copy_num) AS LastDate '\
@@ -309,6 +332,25 @@ class Accessor:
               'GROUP BY MONTH(i.issue_date), b.subject '\
               'ORDER BY COUNT(i.issue_id) DESC LIMIT 3'%month
         return self.query(sql)
+=======
+        # get damaged books
+        pass
+
+    def frequentReport(self):
+        # frequent users
+        pass
+
+    def popularBookReport(self, monthList = [1, 2, 3]):
+        # get popular books
+        # month list is a list of ints (months)
+        # for month in monthList...
+        # TODO: might need to change it to always do last three months
+        pass
+
+    def popularSubjectReport(self):
+        # popular subject
+        pass
+>>>>>>> c6c21a7554097543fdc9b78d257f02c3aa7c0670
 
 ######################## HELPER CODE ##########################
 
@@ -324,28 +366,30 @@ class Accessor:
         else:
             return False
 
-    def availableBook(self, ISBN, flag = 'c'):
-        """returns a boolean if there is an available book"""
-        sql = 'SELECT count(*) FROM Book_Copy WHERE ISBN = "%s" '%ISBN
-        if flag == 'r':
-            sql += 'AND future_requester IS NULL'
-        elif flag == 'c':
-            sql += 'AND checked_out = 0'
-        res = self.query(sql)[0][0]
-        if res == 0:
-            return False
-        else:
-            return True
-
     def getNextAvailable(self, ISBN):
-        # TODO FIX THIS!
-        sql = 'SELECT * FROM Book_Copy WHERE ISBN = "%s"'%ISBN
-        res = self.query(sql)
-        for copy in res:
-            #if copy[]
-            #print(item)
-            pass
-        return 1
+        bookData = self.selectBooks(ISBN)
+        sql = 'SELECT copy_num FROM Book_Copy WHERE ISBN = "%s" '\
+            'AND damaged = 0 '%ISBN
+        # bookData["unheld"] = books that are checked out but not on hold
+        if bookData["available"] <= 0 and bookData["unheld"] <= 0:
+            return None
+        # bookData["available"] = books that aren't checked out
+        elif bookData["available"] > 0:
+            sql += 'AND checked_out = 0 '
+        # bookData["unheld"] = books that are checked out but not on hold
+        elif bookData["unheld"] > 0:
+            sql += 'AND future_requester IS NULL '
+        sql += 'AND hold = 0 '
+        sql += 'ORDER BY copy_num'
+        copy = self.query(sql)[0][0]
+        return copy
+
+    def getFutureRequesters(self, ISBN):
+        sql = 'SELECT future_requester FROM Book_Copy WHERE ISBN = "%s"'%ISBN
+        futureList = []
+        for tinyList in self.query(sql):
+            futureList.append(tinyList[0])
+        return futureList
 
     def isFaculty(self, user):
         # return True if staff, False otherwise
@@ -381,7 +425,20 @@ class Accessor:
             print(sql)
         db = self.db.cursor()
         resp = []
-        db.execute(sql)
+        try:
+            db.execute(sql)
+        except ProgrammingError as p:
+            print(p)
+        except DataError as d:
+            print(d)
+        except IntegrityError as i:
+            print(i)
+        except OperationalError as o:
+            print(o)
+        except NotSupportedError as n:
+            print(n)
+        except:
+            print("Unknown error")
         resp = self.clean(db.fetchall())
         if resp == []:
             return [[None]]
@@ -409,12 +466,11 @@ class Accessor:
 
 dis = Accessor()
 
-# this one broke because of penalties
-# dis.returnBook("78")
+print(dis.getFutureRequesters("0-123-81479-0"))
 
-dis.checkoutBook("42")
 
-dis.returnBook("42")
+
+
 
 
 

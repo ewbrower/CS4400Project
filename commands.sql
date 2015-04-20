@@ -280,7 +280,14 @@ FROM Issues AS i
 INNER JOIN Book AS b ON i.ISBN=b.ISBN
 WHERE MONTH(i.issue_date)=$month
 GROUP BY MONTH(i.issue_date), b.title
+<<<<<<< HEAD
 ORDER BY COUNT(i.issue_id) DESC LIMIT 3
+=======
+ORDER BY COUNT(i.issue_id) DESC LIMIT 3;
+-- how to do limit 3 per group?
+>>>>>>> c6c21a7554097543fdc9b78d257f02c3aa7c0670
+
+-- Amol
 
 -- Frequent Users Report --
 SELECT MONTH( i.issue_date ) , s.fname, s.lname, COUNT( i.issue_id ) 
