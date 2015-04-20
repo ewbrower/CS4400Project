@@ -185,15 +185,16 @@ class Accessor:
 
     def checkoutBook(self, issue):
         # check if a book has been on hold for three days
-        checkSQL = 'SELECT username, copy_num, isbn FROM Issues '\
+        checkSQL = 'SELECT username, issue_date, copy_num, isbn FROM Issues '\
             'WHERE issue_id="%s"'%issue
-        user, copy_num, ISBN = self.query(checkSQL)[0]
-        # still needs work
+        user, issueDate, copy_num, ISBN = self.query(checkSQL)[0]
+        diff = datetime.date.today() - issueDate
+        if diff.days > 3:
+            return False
         # check if that copy is damaged
         damSQL = 'SELECT damaged FROM Book_Copy WHERE ISBN = "%s" '\
             "AND copy_num = %s"%(ISBN, copy_num)
         dam = self.query(damSQL)[0][0]
-        print(dam)
         if dam == 1:
             return False
         # then update Issues, add estimated return date +14
@@ -223,7 +224,7 @@ class Accessor:
         if retDate < today:
             # this means they turned it in late
             diff = today - retDate
-            amount = diff * 0.5
+            amount = diff.days * 0.5
             self.addPenalty(user, amount)
         retSQL = 'UPDATE Book_Copy SET checked_out = 0 '\
             'WHERE ISBN = "%s" AND copy_num = %s'%(ISBN, copy)
@@ -397,7 +398,7 @@ dis = Accessor()
 
 dis.checkoutBook("42")
 
-# dis.checkoutBook("78")
+dis.returnBook("42")
 
 
 
