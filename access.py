@@ -62,6 +62,8 @@ class Accessor:
 
     def search(self, ISBN = None, title = None, author = None,
             publisher = None, edition = None):
+        # MAKE IT SEPARATE BOOKS AVAILABLE AND BOOKS NOT AVAILABLE
+        # ALL RESULTS (TWO TUPLES)
         #TODO: cut it down to ISBN author title
         # v this is really hackish, do not replicate
         terms = locals()
@@ -155,6 +157,11 @@ class Accessor:
         self.query(extSQL)
         return True
 
+    def futureHoldRequest(self, user, ISBN):
+        # get copy num sorted by available date
+        # take out books that already have a future hold request
+        pass
+
     def locateBook(self, ISBN):
         sql = 'SELECT shelf, subject, '\
             '(SELECT aisle FROM Shelf s WHERE s.shelf=b.shelf),'\
@@ -163,6 +170,8 @@ class Accessor:
         return self.query(sql)
 
     def checkoutBook(self, user, ISBN, copy):
+        # check if a book has been on hold for three days
+        # then update Issues, add estimated return date +14
         sql = 'UPDATE '
         pass
 
@@ -193,6 +202,7 @@ class Accessor:
             self.addPenalty(user, amount)
         retSQL = 'UPDATE Book_Copy SET checked_out = 0 '\
             'WHERE ISBN = "%s" AND copy_num = %s'%(ISBN, copy)
+        # add new return date in issues
         self.query(retSQL)
         return True
 
