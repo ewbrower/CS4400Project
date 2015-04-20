@@ -140,16 +140,18 @@ class Accessor:
 
     def holdRequest(self, user, ISBN):
         # also really hackish
-        if not self.availableBook(ISBN, 'r'):
-            return False
+        # bookData["available"] = books that aren't checked out
+        # bookData["unheld"] = books that are checked out but not on hold
         copy = self.getNextAvailable(ISBN)
+        if copy is None:
+            return False
         issueSQL = 'INSERT INTO Issues (username, issue_date, extension_date, '\
             'extension_count, copy_num, return_date, ISBN) VALUES '\
             '("%s", CURDATE(), DATE_ADD(CURDATE(), INTERVAL 7 DAY), 1, %s,'\
             ' DATE_ADD(CURDATE(), INTERVAL 10 DAY), "%s")'%(user, copy, ISBN)
         self.query(issueSQL)
         # now update that specific copy of the book
-        reqSQL = 'UPDATE Book_Copy SET future_requester = "%s" '\
+        reqSQL = 'UPDATE Book_Copy SET future_requester = "%s", hold = 1 '\
         'WHERE ISBN = "%s" AND copy_num = %s'%(user, ISBN, copy)
         self.query(reqSQL)
         return True
@@ -326,28 +328,23 @@ class Accessor:
         else:
             return False
 
-    def availableBook(self, ISBN, flag = 'c'):
-        """returns a boolean if there is an available book"""
-        sql = 'SELECT count(*) FROM Book_Copy WHERE ISBN = "%s" '%ISBN
-        if flag == 'r':
-            sql += 'AND future_requester IS NULL'
-        elif flag == 'c':
-            sql += 'AND checked_out = 0'
-        res = self.query(sql)[0][0]
-        if res == 0:
-            return False
-        else:
-            return True
-
     def getNextAvailable(self, ISBN):
-        # TODO FIX THIS!
-        sql = 'SELECT * FROM Book_Copy WHERE ISBN = "%s"'%ISBN
-        res = self.query(sql)
-        for copy in res:
-            #if copy[]
-            #print(item)
-            pass
-        return 1
+        bookData = self.selectBooks(ISBN)
+        sql = 'SELECT copy_num FROM Book_Copy WHERE ISBN = "%s" '\
+            'AND damaged = 0 '%ISBN
+        # bookData["unheld"] = books that are checked out but not on hold
+        if bookData["available"] <= 0 and bookData["unheld"] <= 0:
+            return None
+        # bookData["available"] = books that aren't checked out
+        elif bookData["available"] > 0:
+            sql += 'AND checked_out = 0 '
+        # bookData["unheld"] = books that are checked out but not on hold
+        elif bookData["unheld"] > 0:
+            sql += 'AND future_requester IS NULL '
+        sql += 'AND hold = 0 '
+        sql += 'ORDER BY copy_num'
+        copy = self.query(sql)[0][0]
+        return copy
 
     def isFaculty(self, user):
         # return True if staff, False otherwise
@@ -411,7 +408,7 @@ class Accessor:
 
 dis = Accessor()
 
-
+dis.holdRequest("ewbrower", "0-123-81479-0")
 
 
 
