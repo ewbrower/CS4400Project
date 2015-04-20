@@ -1,5 +1,6 @@
 import pymysql
 from decimal import Decimal
+import datetime
 
 host = "academic-mysql.cc.gatech.edu"
 username = "cs4400_Group_33"
@@ -140,10 +141,10 @@ class Accessor:
         copy_num = ans[0][1]
         retDate = ans[0][2] + datetime.timedelta(7)
         ISBN = ans[0][3]
-        print(extCount)
-        print(copy_num)
-        print(retDate)
-        print(ISBN)
+        # print(extCount)
+        # print(copy_num)
+        # print(retDate)
+        # print(ISBN)
         # make sure they aren't extending too many times
         if extCount == 3 and self.isFaculty(user) == False:
             print("this")
@@ -182,20 +183,36 @@ class Accessor:
         print(dateList)
         return dateList
 
-    def searchforCheckOut(self, issueid):
+    def searchforCheckOut(self, issue):
         sql = 'SELECT username, copy_num, isbn FROM Issues '\
-            'WHERE issue_id="%s"'%issueid
+            'WHERE issue_id="%s"'%issue
         return self.query(sql)
 
         
-    def returnBook(self, user, ISBN, copy = -1):
-        # if copy = -1, then we have to find out what copy this
-        # user checked out
+    def returnBook(self, issue):
         # check to see if current date is past return date,
-        # then go get the fine
-        pass
+        today = datetime.date.today()
+        # print(today)
+        issueSQL = 'SELECT username, copy_num return_date, ISBN '\
+            'FROM Issues WHERE issue_id = %s'%issue
+        user, copy retDate, ISBN = self.query(issueSQL)[0]
+        print(user)
+        print(copy)
+        print(retDate)
+        print(ISBN)
+        if retDate < today:
+            diff = today - retDate
+            fine = diff * 0.5
+            # this means they turned it in late
+            print("Lo")
+            # go get the fine
+        retSQL = 'UPDATE Book_Copy WHERE ISBN = "%s" '\
+            'AND copy_num = %s'%ISBN, copy
+        self.query(retSQL)
+        return True
 
-    # might want to consolidate damaged and lost
+##### DAMAGED LOST BOOKS ###############
+
     def submitDamagedBook(self, user, ISBN, copy):
         self.brokenBook(user, ISBN, copy, True)
         return True
@@ -209,8 +226,6 @@ class Accessor:
             'ORDER BY issue_date DESC LIMIT 1'%(ISBN,copy)
         lastuer = self.query(sql)
         return lastuser
-
-##### DAMAGED LOST BOOKS ###############
 
     def brokenBook(self, user, ISBN, copy, damaged):
         # get price of the book
@@ -378,7 +393,9 @@ dis = Accessor()
 # res = dis.availableBook("0-123-81479-0")
 # print(res)
 
-print(dis.getIssueData(44))
+# print(dis.getIssueData(44))
+
+dis.returnBook(47)
 
 
 
