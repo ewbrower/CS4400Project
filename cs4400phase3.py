@@ -1,20 +1,14 @@
 from tkinter import *
 from tkinter import ttk
-import pymysql
-import urllib.request
-from urllib import *
 from access import Accessor
 import datetime
 from librarystaffcs4400 import LibraryStaff
-
 
 class Library:
 
     def __init__(self,win):
         self.LoginPage(win)
         self.a=Accessor()
-
-
 
     def LoginPage(self,win): #LoginPage(1)
         self.Login=win
@@ -80,7 +74,6 @@ class Library:
         b2=Button(self.Register, text='Register', command=self.RegisterNew)
         b2.grid(row=6,column=2)
 
-        
     def RegisterNew(self):
         U=self.U.get()
         P=self.P.get()
@@ -95,8 +88,7 @@ class Library:
                 self.MakeProfile()
             else:
                 messagebox.showerror('Error','Username already exists')
-      
-                
+                      
     def MakeProfile(self): #making new profile (3)
         self.Register.withdraw()
         self.makeProfile=Toplevel()
@@ -302,6 +294,7 @@ class Library:
         self.selected=[]
         self.var=StringVar()
         i=0
+        
         while i<len(self.BooksFound):
             self.r=Radiobutton(frame, variable=self.var, value=self.BooksFound[i])
             self.r.deselect()
@@ -311,6 +304,7 @@ class Library:
             Label(frame,text=self.BooksFound[i][2],width=5).grid(row=i+2,column=4, ipadx=1)
             Label(frame,text=self.BooksFound[i][3],width=5).grid(row=i+2,column=5, ipadx=1)
             i+=1
+            
         frame2=Frame(self.holdRequest)
         frame2.grid(row=3,column=1,columnspan=6)
         Label(frame2,text='Hold Request Date').pack(side=LEFT)
@@ -352,7 +346,6 @@ class Library:
     def returntoSearch(self):
         self.holdRequest.withdraw()
         self.Search.deiconify()
-
 
     def holdrequest(self):
         booktohold=self.var
@@ -430,7 +423,6 @@ class Library:
         self.FutureHoldRequest.withdraw()
         self.Menu.deiconify()
             
-
     def TrackLocation(self):
         self.Menu.withdraw()
         self.locate=Toplevel()
@@ -448,7 +440,6 @@ class Library:
         Label(self.locate,text='Shelf Number').grid(row=5,column=3)
         Label(self.locate,text='Subject').grid(row=6,column=3)
 
-        
         self.floorno=IntVar()
         self.aisleno=IntVar()
         self.shelfno=IntVar()
@@ -464,10 +455,10 @@ class Library:
     def tracktomenu(self):
         self.locate.withdraw()
         self.Menu.deiconify()
+        
     def Locate(self):
         isbn=self.isbntrack.get()
         location=self.a.locateBook(isbn)
-        print(location)
         self.shelfno.set(location[0][0])
         self.subj.set(location[0][1])
         self.aisleno.set(location[0][2])
