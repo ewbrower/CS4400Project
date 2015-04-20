@@ -399,6 +399,7 @@ SELECT s.name,
 FROM Subject s
 ORDER BY copies DESC LIMIT 10;
 
+<<<<<<< HEAD
 
 
 
@@ -441,3 +442,14 @@ WHERE b.ISBN = c.ISBN AND c.checked_out = 1;
 
 
 
+=======
+SELECT count(c.ISBN), b.subject, (
+  SELECT MONTH(MAX(return_date)) FROM Issues AS i
+  WHERE i.ISBN = c.ISBN AND i.copy_num = c.copy_num
+) AS LastDate
+FROM Book_Copy AS c
+INNER JOIN Book AS b ON b.ISBN = c.ISBN
+GROUP BY LastDate, b.subject
+ORDER BY count(c.ISBN) DESC LIMIT 3
+-- SAME PROBLEM  - limit per group
+>>>>>>> 226ae542842a8b3736873c1313e6bb926e7cd629
