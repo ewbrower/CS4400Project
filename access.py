@@ -26,6 +26,25 @@ class Accessor:
             raise
         self.db = db
 
+    # lastUser
+    # returnBook
+    # submitDamagedBook
+    # checkoutBook
+    # searchForCheckOut
+    # updatePenalty
+    # typeUser
+    # login
+    # createAccount
+    # createProfile
+    # search
+    # getCopies
+    # holdRequest
+    # getIssueData
+    # requestExtension
+    # locateBook
+
+########## USER / PROFILE MANAGEMENT ###########
+
     def login(self, user, password):
         sql = 'SELECT * FROM User WHERE USERNAME = "%s" AND '\
             'Password = "%s"'%(user,password)
@@ -59,7 +78,7 @@ class Accessor:
             return True
         return False
 
-########################### NEW SEARCH #####################
+########################### SEARCH #####################
 
     def search(self, ISBN = None, title = None, author = None,
             publisher = None, edition = None):
@@ -119,7 +138,7 @@ class Accessor:
 
 ####################### REQUESTS
 
-    def submitRequest(self, user, ISBN):
+    def holdRequest(self, user, ISBN):
         # also really hackish
         if not self.availableBook(ISBN, 'r'):
             return False
@@ -127,8 +146,7 @@ class Accessor:
         issueSQL = 'INSERT INTO Issues (username, issue_date, extension_date, '\
             'extension_count, copy_num, return_date, ISBN) VALUES '\
             '("%s", CURDATE(), DATE_ADD(CURDATE(), INTERVAL 7 DAY), 1, %s,'\
-            ' DATE_ADD(CURDATE(), INTERVAL 10 DAY), "%s")'\
-        %(user, copy, ISBN)
+            ' DATE_ADD(CURDATE(), INTERVAL 10 DAY), "%s")'%(user, copy, ISBN)
         self.query(issueSQL)
         # now update that specific copy of the book
         reqSQL = 'UPDATE Book_Copy SET future_requester = "%s" '\
@@ -136,22 +154,23 @@ class Accessor:
         self.query(reqSQL)
         return True
 
-    def requestExtension(self, user, issue):
-        checkSQL = 'SELECT extension_count, copy_num, return_date, ISBN '\
+    def requestExtension(self, issue):
+        checkSQL = 'SELECT username, extension_count, copy_num, return_date, ISBN '\
             'FROM Issues WHERE issue_id = %s'%issue
         ans = self.query(checkSQL)
         print(ans)
-        extCount = ans[0][0] + 1
-        copy_num = ans[0][1]
-        retDate = ans[0][2] + datetime.timedelta(7)
-        ISBN = ans[0][3]
+        user = ans[0][0]
+        extCount = ans[0][1] + 1
+        copy_num = ans[0][2]
+        retDate = ans[0][3] + datetime.timedelta(7)
+        ISBN = ans[0][4]
         # print(extCount)
         # print(copy_num)
-        # print(retDate)
+        print(retDate)
         # print(ISBN)
         # make sure they aren't extending too many times
         if extCount == 3 and self.isFaculty(user) == False:
-            print("this")
+            print("extended three times already")
             return False
         elif extCount == 6:
             return False
@@ -233,21 +252,6 @@ class Accessor:
         return True
 
 ##### DAMAGED LOST BOOKS ###############
-
-    def submitDamagedBook(self, user, ISBN, copy):
-        self.brokenBook(user, ISBN, copy, True)
-        return True
-
-    def submitLostBook(self, user, ISBN, copy):
-        self.brokenBook(user, ISBN, copy, False)
-        return True
-
-    def lastUser(self, ISBN, copy):
-        sql = 'SELECT username FROM Issues WHERE ISBN = %s AND copy_num=%s'\
-            'ORDER BY issue_date DESC LIMIT 1'%(ISBN,copy)
-        lastuser = self.query(sql)
-        return lastuser
-
     def brokenBook(self, user, ISBN, copy, damaged):
         # get price of the book
         costSQL = 'SELECT cost FROM Book WHERE ISBN = "%s"'%ISBN
@@ -262,6 +266,20 @@ class Accessor:
         sql = 'UPDATE Book_Copy SET damaged = 1 WHERE ISBN = "%s" '\
             'AND copy_num = "%s"'%(ISBN,copy)
         return self.query(sql)
+
+    def lastUser(self, ISBN, copy):
+        sql = 'SELECT username FROM Issues WHERE ISBN = %s AND copy_num=%s'\
+            'ORDER BY issue_date DESC LIMIT 1'%(ISBN,copy)
+        lastuser = self.query(sql)
+        return lastuser
+
+    def submitDamagedBook(self, user, ISBN, copy):
+        self.brokenBook(user, ISBN, copy, True)
+        return True
+
+    def submitLostBook(self, user, ISBN, copy):
+        self.brokenBook(user, ISBN, copy, False)
+        return True
 
     def updatePenalty(self, user):
         sql = 'UPDATE Student_Faculty SET penalty = %s '\
@@ -279,15 +297,15 @@ class Accessor:
         # get damaged books
         pass
 
+    def frequentReport(self):
+        # frequent users
+        pass
+
     def popularBookReport(self, monthList = [1, 2, 3]):
         # get popular books
         # month list is a list of ints (months)
         # for month in monthList...
         # TODO: might need to change it to always do last three months
-        pass
-
-    def frequentReport(self):
-        # frequent users
         pass
 
     def popularSubjectReport(self):
@@ -393,12 +411,11 @@ class Accessor:
 
 dis = Accessor()
 
-# this one broke because of penalties
-# dis.returnBook("78")
 
-dis.checkoutBook("42")
 
-dis.returnBook("42")
+
+
+
 
 
 

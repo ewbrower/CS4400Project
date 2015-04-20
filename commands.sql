@@ -364,8 +364,10 @@ SELECT MONTH(i.issue_date), b.title, COUNT(i.issue_id)
 FROM Issues AS i
 INNER JOIN Book AS b ON i.ISBN=b.ISBN
 GROUP BY MONTH(i.issue_date), b.title
-ORDER BY COUNT(i.issue_id) DESC LIMIT 3
+ORDER BY COUNT(i.issue_id) DESC LIMIT 3;
 -- how to do limit 3 per group?
+
+-- Amol
 
 -- Frequent Users Report --
 
