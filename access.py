@@ -59,44 +59,64 @@ class Accessor:
             return True
         return False
 
+########################### NEW SEARCH #####################
 
     def search(self, ISBN = None, title = None, author = None,
             publisher = None, edition = None):
-        # MAKE IT SEPARATE BOOKS AVAILABLE AND BOOKS NOT AVAILABLE
-        # ALL RESULTS (TWO TUPLES)
-        #TODO: cut it down to ISBN author title
-        # v this is really hackish, do not replicate
-        terms = locals()
+        # THIS IS TERRIBLE
+        terms = dict(locals())
         terms.pop("self", None)
-        # if author !None, then search the Author database only and return
-        if author != None and ISBN != None:
-            sql = 'SELECT * FROM Author '\
-                'WHERE ISBN LIKE "%%%s%%" '\
-                'AND author LIKE "%%%s%%"'%(ISBN, author)
-            resp = self.query(sql, (ISBN, author))
-            return resp
-        # otherwise, construct the SQL statement
+        if terms["author"] != None:
+            sql = self.searchAuthor(terms)
+        else:
+            sql = self.searchBook(terms)
+        res = self.query(sql)
+        if res == []:
+            return False
+        elif len(res) == 1:
+            ISBN = self.query(sql)[0][0]
+            return self.selectBooks(ISBN)
+        else:
+            resList = []
+            for ISBN in res[0]:
+                resList.append(self.selectBooks(ISBN))
+            return resList
+
+    def searchAuthor(self, terms):
+        sql = 'SELECT ISBN FROM Author AS b '\
+            'WHERE author LIKE "%%%s%%"'%(terms["author"])
+        if terms["ISBN"] != None:
+            sql += ' WHERE ISBN LIKE "%%%s%%" '%ISBN
+        return sql
+
+    def searchBook(self, terms):
         first = True
-        sql = "SELECT * FROM Book "
+        sql = 'SELECT ISBN FROM Book '
         for param in terms:
             if terms[param] is not None:
-                print(param)
-                print(terms[param])
                 if first:
                     sql += 'WHERE %s LIKE "%%%s%%" '%(param, terms[param])
                     first = False
                 else:
                     sql += 'AND %s LIKE "%%%s%%" '%(param, terms[param])
-        # and execute
-        resp = self.query(sql)
-        return resp
+        return sql
 
-    def selectBook(self, ISBN, copy = -1):
-        #if copy = -1, then copy number doesn't matter
-        sql = 'SELECT * FROM Book_Copy WHERE ISBN = "%s"'%ISBN
-        if copy is not -1:
-            sql += ' AND copy_num = "%s"'%copy
+    def selectBooks(self, ISBN):
+        avail = self.availableCopies(ISBN)
+        held = self.heldCopies(ISBN)
+        return avail, held
+
+    def availableCopies(self, ISBN):
+        sql = 'SELECT count(*) FROM Book_Copy WHERE checked_out = 0 '\
+            'AND ISBN = "%s"'%ISBN
         return self.query(sql)
+
+    def heldCopies(self, ISBN):
+        sql = 'SELECT count(*) FROM Book_Copy WHERE future_requester IS NULL '\
+            'AND ISBN = "%s"'%ISBN
+        return self.query(sql)
+
+####################### COPIES
 
     def getCopies(self, ISBN, onlyAvailable = False):
         if onlyAvailable:
@@ -107,6 +127,8 @@ class Accessor:
         # return the only item in the query list and the SQL SELECT list
         # return the whole query return
         return self.query(sql)
+
+####################### REQUESTS
 
     def submitRequest(self, user, ISBN):
         # also really hackish
@@ -335,7 +357,7 @@ class Accessor:
 
     def query(self, sql):
         # turn this on to print all SQL queries
-        if False:
+        if True:
             print(sql)
         db = self.db.cursor()
         resp = []
@@ -365,45 +387,7 @@ class Accessor:
 
 dis = Accessor()
 
-# success = dis.login("dip","hunter8") 
-# print(success) # FALSE
-# success = dis.createAccount("dip","hunter8")
-# print(success) # TRUE
-# success = dis.login("dip","hunter8")
-# print(success) # TRUE
-
-# ver = dis.verify("diplo")
-# print(ver) # TRUE
-
-# success = dis.createProfile("diplo", "nomen", "lomen", "12", False, 'F', "dip@di",
-#     "122", False, 0, "music")
-# print(success) # TRUE
-
-# resp = dis.search(None,'abc')
-# print(resp)
-
-# resp = dis.selectBook('123456789012')
-# print(resp) # returns copy tuples (only one in this case)
-
-# resp = dis.locateBook(123456789012)
-# print(resp) # returns floor, subject, aisle, shelf (or something)
-
-# res = dis.submitDamagedBook("ewbrower","0-136-08620-9",1)
-# print(res)
-
-# res = dis.getCopies("0-136-08620-9")
-# print(res)
-
-# res = dis.submitRequest("ewbrower","0-123-81479-0")
-# print(res)
-
-# res = dis.availableBook("0-123-81479-0")
-# print(res)
-
-# print(dis.getIssueData(44))
-
-dis.returnBook(47)
-
+print(dis.search(title = "Database"))
 
 
 
