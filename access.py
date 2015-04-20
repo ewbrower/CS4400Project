@@ -1,6 +1,5 @@
 import pymysql
 from decimal import Decimal
-import datetime
 
 host = "academic-mysql.cc.gatech.edu"
 username = "cs4400_Group_33"
@@ -95,14 +94,6 @@ class Accessor:
         resp = self.query(sql)
         return resp
 
-    def searchPage(self, ISBN = None, title = None, author = None,
-            publisher = None, edition = None):
-        terms = locals()
-        terms.pop("self", None)
-        # SELECT FROM BOOK
-        # WHERE this LIKE terms[param]
-        # AND checked_
-
     def selectBook(self, ISBN, copy = -1):
         #if copy = -1, then copy number doesn't matter
         sql = 'SELECT * FROM Book_Copy WHERE ISBN = "%s"'%ISBN
@@ -120,7 +111,7 @@ class Accessor:
         # return the whole query return
         return self.query(sql)
 
-    def requestHold(self, user, ISBN):
+    def submitRequest(self, user, ISBN):
         # also really hackish
         if not self.availableBook(ISBN, 'r'):
             return False
@@ -140,25 +131,6 @@ class Accessor:
         self.query(reqSQL)
         return True
 
-    def requestExtension(self, user, issue):
-        checkSQL = 'SELECT extension_count, return_date FROM Issues WHERE '\
-            'issue_id = %s'%issue
-        ans = self.query(checkSQL)
-        print(ans)
-        extCount, retDate = ans[0][0],ans[0][1]
-        # get the timedelta from the User type
-        if self.isFaculty(user) == True:
-            tDelt = 5
-        else:
-            tDelt = 3
-        retDate = retDate + datetime.timedelta(tDelt)
-        extSQL = 'UPDATE Issues SET extension_count = %s, return_date = "%s" '\
-        'WHERE issue_id = %s'%(extCount, retDate, issue)
-        print(extSQL)
-        self.query(extSQL)
-        return True
-
-
     def locateBook(self, ISBN):
         sql = 'SELECT shelf, subject, '\
             '(SELECT aisle FROM Shelf s WHERE s.shelf=b.shelf),'\
@@ -170,6 +142,10 @@ class Accessor:
         sql = 'UPDATE '
         pass
 
+    def searchforCheckOut(self, issueid):
+        sql = 'SELECT username, copy_num, isbn FROM Issues WHERE issue_id="%s"'%issueid
+        return self.query(sql)
+        
     def returnBook(self, user, ISBN, copy = -1):
         # if copy = -1, then we have to find out what copy this
         # user checked out
@@ -187,7 +163,7 @@ class Accessor:
         return True
 
     def lastUser(self, ISBN, copy):
-        sql = 'SELECT username FROM Issues WHERE ISBN = %s AND copy_num=%s ORDER BY issue_date DESC LIMIT 1'%(ISBN,copy)
+        sql = 'SELECT username FROM Issues WHERE ISBN = "%s" AND copy_num="%s" ORDER BY issue_date DESC LIMIT 1'%(ISBN,copy)
         lastuer=self.query(sql)
         return lastuser
     
@@ -246,16 +222,6 @@ class Accessor:
         res = self.query(sql)
         # if there is one result, the user already exists in the table
         if len(res) == 1:
-            return True
-        else:
-            return False
-
-    def isFaculty(self, user):
-        # return True if staff, False otherwise
-        sql = 'SELECT count(1) FROM Student_Faculty WHERE username = "%s" '\
-        'AND faculty = 1'%user
-        res = self.query(sql)
-        if res[0][0] == 1:
             return True
         else:
             return False
@@ -341,21 +307,11 @@ dis = Accessor()
 # res = dis.getCopies("0-136-08620-9")
 # print(res)
 
-# res = dis.submitRequest("ewbrower","0-123-81479-0")
-# print(res)
+res = dis.submitRequest("ewbrower","0-123-81479-0")
+print(res)
 
 # res = dis.availableBook("0-123-81479-0")
 # print(res)
-
-
-# dis.requestHold("ewbrower", "0-123-81479-0")
-# res = dis.requestExtension("ewbrower", 12)
-# print(res)
-
-print(dis.isFaculty("ewbrower"))
-print(dis.isFaculty("wchurchill"))
-
-
 
 
 
