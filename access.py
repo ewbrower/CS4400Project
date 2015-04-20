@@ -141,20 +141,34 @@ class Accessor:
         return True
 
     def requestExtension(self, user, issue):
-        checkSQL = 'SELECT extension_count, return_date FROM Issues WHERE '\
-            'issue_id = %s'%issue
+        checkSQL = 'SELECT extension_count, copy_num, return_date, ISBN '\
+        'FROM Issues WHERE issue_id = %s'%issue
         ans = self.query(checkSQL)
         print(ans)
-        extCount, retDate = ans[0][0],ans[0][1]
-        # get the timedelta from the User type
-        if self.isFaculty(user) == True:
-            tDelt = 5
-        else:
-            tDelt = 3
-        retDate = retDate + datetime.timedelta(tDelt)
+        extCount = ans[0][0] + 1
+        copy_num = ans[0][1]
+        retDate = ans[0][2] + datetime.timedelta(7)
+        ISBN = ans[0][3]
+        print(extCount)
+        print(copy_num)
+        print(retDate)
+        print(ISBN)
+        # make sure they aren't extending too many times
+        if extCount == 3 and self.isFaculty(user) == False:
+            print("this")
+            return False
+        elif extCount == 6:
+            return False
+        # make sure the book doesn't have a hold on it
+        holdSQL = 'SELECT future_requester FROM Book_Copy WHERE ISBN = "%s" '\
+            'AND copy_num = %s'%(ISBN, copy_num)
+        future = self.query(holdSQL)
+        print(future)
+        if future != "NULL":
+            print("this")
+            return False
         extSQL = 'UPDATE Issues SET extension_count = %s, return_date = "%s" '\
-        'WHERE issue_id = %s'%(extCount, retDate, issue)
-        print(extSQL)
+            'WHERE issue_id = %s'%(extCount, retDate, issue)
         self.query(extSQL)
         return True
 
@@ -188,7 +202,7 @@ class Accessor:
 
     def lastUser(self, ISBN, copy):
         sql = 'SELECT username FROM Issues WHERE ISBN = %s AND copy_num=%s ORDER BY issue_date DESC LIMIT 1'%(ISBN,copy)
-        lastuer=self.query(sql)
+        lastuer = self.query(sql)
         return lastuser
     
     def brokenBook(self, user, ISBN, copy, damaged):
@@ -207,9 +221,13 @@ class Accessor:
             'WHERE username = "%s";'%(newPen, user)
         self.query(penaltySQL)
         # get specific copy of book and do shit to it
-        sql = 'UPDATE Book_Copy SET damaged = 1 '\
-            'WHERE ISBN = "%s" AND copy_num = "%s"'%(ISBN,copy)
+        sql = 'UPDATE Book_Copy SET damaged = 1 WHERE ISBN = "%s" AND copy_num = "%s"'%(ISBN,copy)
         return self.query(sql)
+
+    def updatePenalty(self, user):
+        sql = 'UPDATE Student_Faculty SET penalty = %s WHERE username = "%s"'%user
+        self.query(sql)
+        return True
 
 ############## REPORTS ###############
 
@@ -348,12 +366,12 @@ dis = Accessor()
 # print(res)
 
 
-# dis.requestHold("ewbrower", "0-123-81479-0")
-# res = dis.requestExtension("ewbrower", 12)
-# print(res)
+res = dis.requestHold("ewbrower", "0-132-56870-5")
+# res = dis.requestExtension("ewbrower", 42)
+print(res)
 
-print(dis.isFaculty("ewbrower"))
-print(dis.isFaculty("wchurchill"))
+# print(dis.isFaculty("ewbrower"))
+# print(dis.isFaculty("wchurchill"))
 
 
 
