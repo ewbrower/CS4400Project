@@ -44,15 +44,6 @@ class Accessor:
             return True
         return False
 	
-    # def typeUser(self, user):
-    #     sql= 'SELECT * FROM Staff WHERE username ="%s"'%(user)
-    #     resp = self.query(sql)
-    #     if len(resp)==1:
-    #         return True
-    #     else:
-    #         return False
-	
-	
     def createProfile(self, user, fname, lname, dob, debarred, gender,
         email, address, faculty, penalty, dept):
         sql = 'INSERT INTO Student_Faculty VALUES("%s", "%s", "%s",'\
@@ -310,6 +301,14 @@ class Accessor:
         'AND faculty = 1'%user
         res = self.query(sql)
         if res[0][0] == 1:
+            return True
+        else:
+            return False
+
+    def typeUser(self, user):
+        sql= 'SELECT count(1) FROM Staff WHERE username ="%s"'%user
+        res = self.query(sql)
+        if res[0][0]==1:
             return True
         else:
             return False

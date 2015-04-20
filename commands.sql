@@ -266,13 +266,78 @@ WHERE ISBN = $data
 
 -- Damaged Report --
 
-SELECT count(*),
-  c.return_date,
-  (SELECT subject
-    FROM Book b
-    WHERE b.ISBN = c.ISBN)
-FROM Book_Copy c
-WHERE damaged = TRUE;
+-- SELECT count(*),
+--   c.return_date,
+--   (SELECT subject
+--     FROM Book b
+--     WHERE b.ISBN = c.ISBN)
+-- FROM Book_Copy c
+-- WHERE damaged = TRUE;
+
+SELECT count(*) FROM Book_Copy WHERE damaged = TRUE
+JOIN (ISBN)
+SELECT subject FROM Book
+JOIN (ISBN)
+SELECT return_date FROM Issues;
+
+SELECT DISTINCT count(*), b.subject, MONTH(i.return_date) as month
+FROM Book_Copy AS c
+JOIN Book AS b ON c.ISBN = b.ISBN
+JOIN Issues AS i ON c.ISBN = i.ISBN
+WHERE c.damaged = 1
+GROUP BY month;
+
+SELECT subject, (SELECT count(*) FROM Book_Copy WHERE damaged = 1 AND ISBN = b.ISBN)
+FROM Book AS b
+GROUP BY b.subject;
+
+SELECT subject, (select * from Book_Copy WHERE ISBN = b.ISBN)
+FROM Book AS b;
+
+SELECT b.subject, c.ISBN, c.copy_num, c.damaged FROM Book AS b
+INNER JOIN Book_Copy AS c ON c.ISBN = b.ISBN
+INNER JOIN Issues AS i ON c.ISBN = i.ISBN
+WHERE c.damaged = 1;
+
+SELECT c.copy_num, (
+    SELECT ISBN, (
+      SELECT MAX(return_date) FROM Issues WHERE ISBN = b.ISBN
+      )
+    FROM Book AS b
+    WHERE ISBN = c.ISBN
+  )
+FROM Book_Copy AS c
+WHERE c.damaged = 1;
+
+SELECT i.return_date, c.ISBN, c.copy_num
+FROM Book_Copy AS c
+INNER JOIN Issues AS i ON i.copy_num = c.copy_num AND i.ISBN = c.ISBN
+WHERE c.damaged = 1;
+
+SELECT i.return_date, c.ISBN, c.copy_num
+FROM Issues AS i
+INNER JOIN Book_Copy AS c ON i.copy_num = c.copy_num AND i.ISBN = c.ISBN
+WHERE c.damaged = 1;
+
+
+SELECT c.ISBN, b.subject (
+  SELECT MAX(return_date) FROM Issues AS i
+  WHERE i.ISBN = c.ISBN AND i.copy_num = c.copy_num
+) AS LastDate
+FROM Book_Copy AS c
+INNER JOIN Book AS b ON b.ISBN = c.ISBN
+WHERE c.damaged = 1;
+
+-- V this one actually works
+SELECT c.ISBN, b.subject, (
+  SELECT MAX(return_date) FROM Issues AS i
+  WHERE i.ISBN = c.ISBN AND i.copy_num = c.copy_num
+) AS LastDate
+FROM Book_Copy AS c
+INNER JOIN Book AS b ON b.ISBN = c.ISBN
+WHERE c.damaged = 1;
+
+-- INNER JOIN Book_Copy AS c ON b.ISBN = c.ISBN
 
 -- Popular Report --
 
