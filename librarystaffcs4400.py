@@ -96,10 +96,10 @@ class LibraryStaff:
         Label(self.Lost,text='Amount to be charged').grid(row=8,column=1)
 
         self.lastuser=StringVar()
-        amount=StringVar()
+        self.amount=StringVar()
         
         Entry(self.Lost,textvariable=self.lastuser,state='readonly').grid(row=7,column=2)
-        Entry(self.Lost,textvariable=amount).grid(row=8,column=2)
+        Entry(self.Lost,textvariable=self.amount).grid(row=8,column=2)
 
         Button(self.Lost,text='Submit',command=self.submitchange).grid(row=9,column=4)
         Button(self.Lost,text='Cancel', command=self.cancel).grid(row=9,column=5)
@@ -111,11 +111,13 @@ class LibraryStaff:
     def lastuser(self):
         isbn=self.lostbook.get()
         copy=self.lostcopy.get()
-        lastuser=self.a.lastUser(isbn, copy)
-        self.lastuser.set(lastuser)
+        self.luser=self.a.lastUser(isbn, copy)
+        self.lastuser.set(str(self.luser[1]+' '+self.luser[2]))
 
     def submitchange(self):
-        pass
+        user=self.luser[0]
+        amount=self.amount.get()
+        self.a.updatePenalty(amount,user)
     
     def ReturnBook(self):
         self.Page.withdraw()
@@ -158,6 +160,7 @@ class LibraryStaff:
         self.a.returnBook(usern,isbn, copynum)
         if YN=='Y':
             self.a.submitDamagedBook(usern, isbn, copynum)
+        
         
         
     def ReportsPage(self):
