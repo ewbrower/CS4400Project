@@ -143,12 +143,13 @@ class Accessor:
                 "title": title, "edition": edition}
         return res
 
-####################### REQUESTS
+####################### REQUESTS #####################################
 
     def holdRequest(self, user, ISBN):
         # bookData["available"] = books that aren't checked out
         # bookData["unheld"] = books that are checked out but not on hold
         copy = self.getNextAvailable(ISBN)
+        print(copy)
         if copy is None:
             return False
         # check to see if the user already future requested this book (not copy)
@@ -171,8 +172,8 @@ class Accessor:
         return issueid
 
     def requestExtension(self, issue):
-        checkSQL = 'SELECT username, extension_count, copy_num, return_date, ISBN '\
-            'FROM Issues WHERE issue_id = %s'%issue
+        checkSQL = 'SELECT username, extension_count, copy_num, '\
+            'return_date, ISBN FROM Issues WHERE issue_id = %s'%issue
         ans = self.query(checkSQL)
         print(ans)
         user = ans[0][0]
@@ -366,7 +367,8 @@ class Accessor:
     def getNextAvailable(self, ISBN):
         bookData = self.selectBooks(ISBN)
         sql = 'SELECT copy_num FROM Book_Copy WHERE ISBN = "%s" '\
-            'AND damaged = 0 AND checked_out = 0 '%ISBN
+            'AND damaged = 0 AND checked_out = 0 '\
+            'AND hold = 0 '%ISBN
         # bookData["unheld"] = books that are checked out but not on hold
         if bookData["held"] <= 0 and bookData["unheld"] <= 0:
             return None
@@ -466,7 +468,8 @@ class Accessor:
 dis = Accessor()
 
 
-print(dis.canCheckout("ewbrower","0-123-81479-0"))
+res = dis.holdRequest("ewbrower", "0-123-81479-0")
+print(res)
 
 
 
