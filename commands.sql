@@ -322,7 +322,7 @@ FROM Book AS b;
 SELECT b.ISBN, (
   SELECT count(*)
   FROM Book_Copy AS c
-  WHERE c.future_requester IS NULL AND b.ISBN = c.ISBN) AS Count
+  WHERE c.future_requester IS NOT NULL AND b.ISBN = c.ISBN) AS Count
 FROM Book AS b;
 
 SELECT b.title, i.issue_id, b.ISBN, c.copy_num, i.return_date

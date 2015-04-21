@@ -125,15 +125,19 @@ class Accessor:
         return sql
 
     def selectBooks(self, ISBN):
-        availSQL = 'SELECT b.ISBN, (SELECT count(*) FROM Book_Copy AS c '\
-            'WHERE c.checked_out = 0 AND b.ISBN = c.ISBN) AS Count '\
-            'FROM Book AS b WHERE ISBN = "%s";'%ISBN
         heldSQL = 'SELECT b.ISBN, (SELECT count(*) FROM Book_Copy AS c '\
-            'WHERE c.future_requester IS NULL AND b.ISBN = c.ISBN) AS Count '\
+            'WHERE c.checked_out = 0 '\
+            'AND c.future_requester IS NOT NULL '\
+            'AND b.ISBN = c.ISBN) AS Count '\
             'FROM Book AS b WHERE ISBN = "%s";'%ISBN
-        avail = self.query(availSQL)[0]
-        unheld = self.query(heldSQL)[0]
-        res = {"ISBN" : ISBN, "available" : avail[1], "unheld" : unheld[1]}
+        unheldSQL = 'SELECT b.ISBN, (SELECT count(*) FROM Book_Copy AS c '\
+            'WHERE c.checked_out = 0 '\
+            'AND c.future_requester IS NULL '\
+            'AND b.ISBN = c.ISBN) AS Count '\
+            'FROM Book AS b WHERE ISBN = "%s";'%ISBN
+        held = self.query(heldSQL)[0]
+        unheld = self.query(unheldSQL)[0]
+        res = {"ISBN" : ISBN, "held" : held[1], "unheld" : unheld[1]}
         return res
 
 ####################### REQUESTS
@@ -353,17 +357,16 @@ class Accessor:
     def getNextAvailable(self, ISBN):
         bookData = self.selectBooks(ISBN)
         sql = 'SELECT copy_num FROM Book_Copy WHERE ISBN = "%s" '\
-            'AND damaged = 0 '%ISBN
+            'AND damaged = 0 AND checked_out = 0 '%ISBN
         # bookData["unheld"] = books that are checked out but not on hold
-        if bookData["available"] <= 0 and bookData["unheld"] <= 0:
+        if bookData["held"] <= 0 and bookData["unheld"] <= 0:
             return None
         # bookData["available"] = books that aren't checked out
-        elif bookData["available"] > 0:
-            sql += 'AND checked_out = 0 '
+        elif bookData["held"] > 0:
+            sql += 'AND hold = 1 '
         # bookData["unheld"] = books that are checked out but not on hold
         elif bookData["unheld"] > 0:
-            sql += 'AND future_requester IS NULL '
-        sql += 'AND hold = 0 '
+            sql += 'AND hold = 0 '
         sql += 'ORDER BY copy_num'
         copy = self.query(sql)[0][0]
         return copy
