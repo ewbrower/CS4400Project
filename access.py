@@ -157,15 +157,14 @@ class Accessor:
         # check to see if the user already checked out the book
         if not self.canCheckout(user, ISBN):
             return False
-        issueSQL = 'INSERT INTO Issues (username, issue_date, '\
-                'extension_count, copy_num, return_date, ISBN) VALUES '\
-                '("%s", CURDATE(), 0, %s, '\
-                'DATE_ADD(CURDATE(), INTERVAL 17 DAY), "%s")'\
-                %(user, copy, ISBN)
+        issueSQL = 'INSERT INTO Issues (username, issue_date, extension_date, '\
+            'extension_count, copy_num, return_date, ISBN) VALUES '\
+            '("%s", CURDATE(), DATE_ADD(CURDATE(), INTERVAL 7 DAY), 1, %s,'\
+            ' DATE_ADD(CURDATE(), INTERVAL 10 DAY), "%s")'%(user, copy, ISBN)
         self.query(issueSQL)
         # now update that specific copy of the book (NIX THIS)
-        reqSQL = 'UPDATE Book_Copy SET hold = 1 WHERE ISBN = "%s" '\
-            'AND copy_num = %s'%(user, ISBN, copy)
+        reqSQL = 'UPDATE Book_Copy SET future_requester = "%s", hold = 1 '\
+        'WHERE ISBN = "%s" AND copy_num = %s'%(user, ISBN, copy)
         self.query(reqSQL)
         issueid = self.query('SELECT last_insert_id()')[0][0]
         return issueid
