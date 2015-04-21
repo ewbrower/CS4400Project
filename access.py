@@ -1,8 +1,6 @@
 import pymysql
 from decimal import Decimal
 import datetime
-import warnings
-from pymysql.err import *
 
 host = "academic-mysql.cc.gatech.edu"
 username = "cs4400_Group_33"
@@ -165,6 +163,8 @@ class Accessor:
         if not self.canCheckout(user, ISBN):
             print("cnanot check out another copy of this ISBN")
             return False
+        if self.debarred(user):
+            return "debarred"
         issueSQL = 'INSERT INTO Issues (username, issue_date, '\
                 'extension_count, copy_num, return_date, ISBN) VALUES '\
                 '("%s", CURDATE(), 0, %s, '\
@@ -467,6 +467,15 @@ class Accessor:
         else:
             return False
 
+    def debarred(self, user):
+        sql = 'SELECT debarred FROM Student_Faculty WHERE username '\
+                '= "%s"'%user
+        res = self.query(sql)[0][0]
+        if res == 1:
+            return True
+        else:
+            raise False
+
     def addPenalty(self, user, amount):
         penaltySQL = 'SELECT penalty FROM Student_Faculty WHERE '\
             'username = "%s"'%user
@@ -527,7 +536,7 @@ class Accessor:
 dis = Accessor()
 
 
-dis.returnBook("123")
+print(dis.debarred("ewbrower"))
 
 
 
