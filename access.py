@@ -177,10 +177,10 @@ class Accessor:
         return issueid
 
     def requestExtension(self, issue):
+        # get some data to munch on
         checkSQL = 'SELECT username, extension_count, copy_num, '\
             'return_date, ISBN FROM Issues WHERE issue_id = %s'%issue
         ans = self.query(checkSQL)
-        print(ans)
         user = ans[0][0]
         extCount = ans[0][1] + 1
         copy_num = ans[0][2]
@@ -188,17 +188,19 @@ class Accessor:
         ISBN = ans[0][4]
         # make sure they aren't extending too many times
         if extCount == 3 and self.isFaculty(user) == False:
+            print("extending too many times")
             return False
         elif extCount == 6:
+            print("extended too many times")
             return False
-        # make sure the book doesn't have a hold on it
+        # make sure the book doesn't have a hold on it from anyone
         holdSQL = 'SELECT future_requester FROM Book_Copy WHERE ISBN = "%s" '\
             'AND copy_num = %s'%(ISBN, copy_num)
-        future = self.query(holdSQL)
-        print(future)
-        if future != "NULL":
-            print("this")
+        future = self.query(holdSQL)[0][0]
+        if future != None:
+            print("%s is already a future_requester"%future)
             return False
+        # update the issue_id with the larger extension
         extSQL = 'UPDATE Issues SET extension_count = %s, return_date = "%s" '\
             'WHERE issue_id = %s'%(extCount, retDate, issue)
         self.query(extSQL)
@@ -488,7 +490,7 @@ class Accessor:
 dis = Accessor()
 
 
-res = dis.holdRequest("ewbrower", "0-123-81479-0")
+res = dis.requestExtension(2)
 print(res)
 
 
