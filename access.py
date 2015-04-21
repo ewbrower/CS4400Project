@@ -277,6 +277,12 @@ class Accessor:
         dateList = self.query(sql)
         print(dateList)
         return dateList
+
+    def getIssue(self, issue):
+        sql = 'SELECT * FROM Issues WHERE issue_id = %s'%issue
+        issueList = self.query(sql)
+        print(issueList)
+        return issueList
         
     def returnBook(self, issue):
         # check to see if current date is past return date
