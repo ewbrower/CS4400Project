@@ -151,17 +151,21 @@ class Accessor:
         copy = self.getNextAvailable(ISBN)
         if copy is None:
             return False
-        # check to see if the user already requested this book (not copy)
+        # check to see if the user already future requested this book (not copy)
         if user in self.getFutureRequesters(ISBN):
             return False
-        issueSQL = 'INSERT INTO Issues (username, issue_date, extension_date, '\
-            'extension_count, copy_num, return_date, ISBN) VALUES '\
-            '("%s", CURDATE(), DATE_ADD(CURDATE(), INTERVAL 7 DAY), 1, %s,'\
-            ' DATE_ADD(CURDATE(), INTERVAL 10 DAY), "%s")'%(user, copy, ISBN)
+        # check to see if the user already checked out the book
+        if not self.canCheckout(user, ISBN):
+            return False
+        issueSQL = 'INSERT INTO Issues (username, issue_date, '\
+                'extension_count, copy_num, return_date, ISBN) VALUES '\
+                '("%s", CURDATE(), 0, %s, '\
+                'DATE_ADD(CURDATE(), INTERVAL 17 DAY), "%s")'\
+                %(user, copy, ISBN)
         self.query(issueSQL)
-        # now update that specific copy of the book
-        reqSQL = 'UPDATE Book_Copy SET future_requester = "%s", hold = 1 '\
-        'WHERE ISBN = "%s" AND copy_num = %s'%(user, ISBN, copy)
+        # now update that specific copy of the book (NIX THIS)
+        reqSQL = 'UPDATE Book_Copy SET hold = 1 WHERE ISBN = "%s" '\
+            'AND copy_num = %s'%(user, ISBN, copy)
         self.query(reqSQL)
         issueid = self.query('SELECT last_insert_id()')[0][0]
         return issueid
@@ -383,6 +387,15 @@ class Accessor:
             futureList.append(tinyList[0])
         return futureList
 
+    def canCheckout(self, user, ISBN):
+        sql = 'SELECT count(1) FROM Issues WHERE username = "%s" '\
+            'AND ISBN = "%s" AND return_date > CURDATE()'%(user, ISBN)
+        res = self.query(sql)
+        if res[0][0] >= 1:
+            return False
+        else:
+            return True
+
     def isFaculty(self, user):
         # return True if staff, False otherwise
         sql = 'SELECT count(1) FROM Student_Faculty WHERE username = "%s" '\
@@ -459,7 +472,7 @@ class Accessor:
 dis = Accessor()
 
 
-print(dis.holdRequest("ewbrower","0-123-81479-0"))
+print(dis.canCheckout("ewbrower","0-123-81479-0"))
 
 
 
