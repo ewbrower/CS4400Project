@@ -298,7 +298,7 @@ class Library:
             
         i=0
         while i<len(available):
-            self.r=Radiobutton(frame, variable=self.var, value=available[i])
+            self.r=Radiobutton(frame, variable=self.var, value=available[i][0])
             self.r.deselect()
             self.r.grid(row=i+2,column=1)
             Label(frame,text=available[i][0],width=10).grid(row=i+2,column=2, ipadx=1)
@@ -348,14 +348,14 @@ class Library:
         self.holdRequest.withdraw()
         self.Search.deiconify()
 
-    def holdrequest(self): ####TEST
+    def holdrequest(self): 
         booktohold=self.var.get()
         user=self.Username.get()
-        print(booktohold[0])
-        abc=self.a.holdRequest(user,booktohold[0])
-        if abc==True:
-            messagebox.showinfo('Congrats!','Your hold has been placed')
-            
+        abc=self.a.holdRequest(user,booktohold)
+        if type(abc)==int:
+            messagebox.showinfo('Congrats!','Your hold has been placed. The issue Id is %s.'%abc)
+        else:
+            messagebox.showerror('Sorry','You can only place one hold per one book.')
 
     def RequestExtension(self):
         self.Menu.withdraw()
@@ -402,10 +402,9 @@ class Library:
         self.RequestExtension.withdraw()
         self.Menu.deiconify()
         
-    def calcEx(self): ##WORK
+    def calcEx(self): 
         issueid=self.issueID.get()
         data=self.a.getIssueData(issueid)
-        print(data)
         self.checkoutDate.set(data[0][0])
         if data[0][1]==None:
             self.currentExtension.set(data[0][0])
@@ -415,11 +414,13 @@ class Library:
         self.newExtension.set(datetime.datetime.strftime(datetime.datetime.now(),'%y-%d-%m'))
         self.newReturnDate.set(datetime.datetime.strftime(datetime.datetime.now()+datetime.timedelta(days=17),'%y-%d-%m'))
 
-        
-    def requestEx(self): ###TEST
+    def requestEx(self): 
         issueid=self.issueID.get()
-        self.a.requestExtension(user,issueid)
-        
+        result=self.a.requestExtension(issueid)
+        if result==True:
+            messagebox.showinfo('Success!','Your extension request has been accepted.')
+        else:
+            messagebox.showerror('Error!','Your extensino request has been denied. You have reached the maximum amount of extensions.')
 
     def FutureHoldRequest(self):
         self.Menu.withdraw()
@@ -427,14 +428,14 @@ class Library:
         self.FutureHoldRequest.title("Future Hold Request for a Book")
 
         Label(self.FutureHoldRequest,text="ISBN").grid(row=2,column=0,sticky=E)
-        self.ISBN = StringVar()
-        e1=Entry(self.FutureHoldRequest,textvariable=self.ISBN).grid(row=2,column=1,ipadx=30)
+        self.ISBN2 = StringVar()
+        e1=Entry(self.FutureHoldRequest,textvariable=self.ISBN2).grid(row=2,column=1,ipadx=30)
         b1=Button(self.FutureHoldRequest,text='Request', command=self.checkISBN).grid(row=2,column=3)
         ttk.Separator(self.FutureHoldRequest,orient=HORIZONTAL).grid(row=3,column=0,columnspan=4,sticky="EW")
 
         Label(self.FutureHoldRequest,text='Copy Number').grid(row=4,column=0,sticky=E)
-        self.copyNum = StringVar()
-        e2=Entry(self.FutureHoldRequest,textvariable=self.copyNum,state="readonly").grid(row=4,column=1,ipadx=30)
+        self.availcopyNum = StringVar()
+        e2=Entry(self.FutureHoldRequest,textvariable=self.availcopyNum,state="readonly").grid(row=4,column=1,ipadx=30)
 
         Label(self.FutureHoldRequest,text="Expected Available Date").grid(row=5,column=0,sticky=E)
         self.expectedAvailable = StringVar()
@@ -445,10 +446,14 @@ class Library:
         b3=Button(self.FutureHoldRequest, text='Back', command=self.fhrtomenu).grid(row=7, column=1, sticky=E)
         
     def checkISBN(self):
-        pass
+        isbn=self.ISBN2.get()
+        data= self.a.futureHoldRequest(isbn)
+        self.availcopyNum.set(data[0])
+        self.expectedAvailable.set(data[1])
 
     def futureReq(self):
-        pass
+        user=self.Username.get()
+        
 
     def fhrtomenu(self):
         self.FutureHoldRequest.withdraw()
