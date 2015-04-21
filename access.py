@@ -165,7 +165,7 @@ class Accessor:
         self.query(issueSQL)
         # now update that specific copy of the book (NIX THIS)
         reqSQL = 'UPDATE Book_Copy SET hold = 1 WHERE ISBN = "%s" '\
-            'AND copy_num = %s'%(user, ISBN, copy)
+            'AND copy_num = %s'%(ISBN, copy)
         self.query(reqSQL)
         issueid = self.query('SELECT last_insert_id()')[0][0]
         return issueid
@@ -370,12 +370,6 @@ class Accessor:
         # bookData["unheld"] = books that are checked out but not on hold
         if bookData["held"] <= 0 and bookData["unheld"] <= 0:
             return None
-        # bookData["available"] = books that aren't checked out
-        elif bookData["held"] > 0:
-            sql += 'AND hold = 1 '
-        # bookData["unheld"] = books that are checked out but not on hold
-        elif bookData["unheld"] > 0:
-            sql += 'AND hold = 0 '
         sql += 'ORDER BY copy_num'
         copy = self.query(sql)[0][0]
         return copy
