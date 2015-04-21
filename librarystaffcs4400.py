@@ -63,8 +63,10 @@ class LibraryStaff:
         
     def checkout(self):
         issueid=self.isid.get()
-        self.a.checkoutBook(issueid)
-
+        data=self.a.checkoutBook(issueid)
+        if data==True:
+            messagebox.showinfo('Success!','Book has been checked out.')
+            self.backfromcheckout()
 
     def backfromcheckout(self):
         self.CheckOut.withdraw()
@@ -120,7 +122,9 @@ class LibraryStaff:
         user=self.luser[0][0]
         amount=self.amount.get()
         self.a.updatePenalty(amount,user)
-    
+        messagebox.showinfo('Success','Penalty has been entered.')
+        self.cancel()
+        
     def ReturnBook(self):
         self.Page.withdraw()
         self.ReturnBook=Toplevel()
@@ -166,11 +170,14 @@ class LibraryStaff:
         YN=self.YN.get()
         usern=self.userName.get()
         isbn=self.ISBNx.get()
-        self.a.returnBook(issueID)
+        data=self.a.returnBook(issueID)
         copynum=self.copyNumx.get()
         if YN=='Y':
             self.a.submitDamagedBook(usern, isbn, copynum)
             self.LostDamagedPage()
+        if data==True:
+            messagebox.showinfo('Success','Book has been returned.')
+            self.backfromretunr()
         
     def ReportsPage(self):
         self.Page.withdraw()
@@ -199,7 +206,6 @@ class LibraryStaff:
         Label(f1, text='Month').grid(row=1,column=1)
         OptionMenu(f1, self.month, 'January','February','March').grid(row=1,column=2)
 
-        
         Label(f1, text='Subject').grid(row=1,column=3)
         Label(f1, text='Subject').grid(row=2,column=3)
         Label(f1, text='Subject').grid(row=3,column=3)

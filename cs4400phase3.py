@@ -447,7 +447,6 @@ class Library:
         
     def checkISBN(self):
         data= self.a.futureHoldRequest(self.ISBN2.get())
-        print(data)
         self.availcopyNum.set(data[0])
         self.expectedAvailable.set(data[1])
 
