@@ -336,6 +336,19 @@ FROM Book AS b
 INNER JOIN Book_Copy AS c
 WHERE b.ISBN = c.ISBN AND c.checked_out = 1;
 
+-- SELECT c.copy_num, i.return_date 
+-- FROM Book_Copy AS c, Issues AS i
+-- WHERE c.checked_out = 0
+-- AND i.return_date > CURDATE()
+-- AND c.ISBN = "0-553-59354-4" 
+-- ORDER BY i.return_date LIMIT 1;
+
+SELECT c.copy_num, i.return_date
+FROM Book_Copy AS c
+INNER JOIN Issues AS i ON c.ISBN = i.ISBN AND c.copy_num = i.copy_num
+WHERE i.return_date > CURDATE()
+AND c.ISBN = "1-285-19614-7"
+ORDER BY i.return_date LIMIT 1;
 
 
 

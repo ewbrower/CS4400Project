@@ -2,7 +2,7 @@ import pymysql
 from decimal import Decimal
 import datetime
 import warnings
-from pymysql import err
+from pymysql.err import *
 
 host = "academic-mysql.cc.gatech.edu"
 username = "cs4400_Group_33"
@@ -210,15 +210,15 @@ class Accessor:
 
     def futureHoldRequest(self, ISBN):
         # get copy num sorted by available date
-        # sql = 'SELECT b.ISBN, (SELECT copy_num FROM Book_Copy AS c '\
-        #     'WHERE c.checked_out = 0 AND b.ISBN = c.ISBN) AS Copy '\
-        #     'FROM Book AS b WHERE ISBN = "%s" ORDER BY c.return_date'%ISBN
-        sql = 'SELECT copy_num, return_date FROM Book_Copy '\
-                'WHERE checked_out = 1 '\
-                'AND ISBN = "%s" '\
-                'ORDER BY return_date LIMIT 1'
+        sql = 'SELECT c.copy_num, i.return_date '\
+                'FROM Book_Copy AS c '\
+                'INNER JOIN Issues AS i ON c.ISBN = i.ISBN '\
+                'AND c.copy_num = i.copy_num '\
+                'WHERE i.return_date > CURDATE() '\
+                'AND c.ISBN = "%s" '\
+                'ORDER BY i.return_date LIMIT 1;'%ISBN
         res = self.query(sql)
-        return res
+        return res[0]
 
     def addFutureRequest(self, user, ISBN, copy):
         sql = 'UPDATE '
@@ -458,26 +458,28 @@ class Accessor:
             'WHERE username = "%s";'%(newPen, user)
         self.query(penaltySQL)
 
+############## CRITICAL ################
+
     def query(self, sql):
         # turn this on to print all SQL queries
         if True:
-            print("\n" + sql)
+            print("---\n" + sql + "\n---")
         db = self.db.cursor()
         resp = []
-        try:
-            db.execute(sql)
-        except ProgrammingError as p:
-            print(p)
-        except DataError as d:
-            print(d)
-        except IntegrityError as i:
-            print(i)
-        except OperationalError as o:
-            print(o)
-        except NotSupportedError as n:
-            print(n)
-        except:
-            print("Unknown error")
+        # try:
+        db.execute(sql)
+        # except ProgrammingError as p:
+        #     print(p)
+        # except DataError as d:
+        #     print(d)
+        # except IntegrityError as i:
+        #     print(i)
+        # except OperationalError as o:
+        #     print(o)
+        # except NotSupportedError as n:
+        #     print(n)
+        # except:
+        #     print("Unknown error")
         resp = self.clean(db.fetchall())
         if resp == []:
             return [[None]]
@@ -507,6 +509,10 @@ dis = Accessor()
 
 
 res = dis.futureHoldRequest("0-136-08620-9")
+print(res)
+res = dis.futureHoldRequest("1-285-19614-7")
+print(res)
+res = dis.futureHoldRequest("0-553-59354-4")
 print(res)
 
 
