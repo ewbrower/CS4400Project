@@ -1,6 +1,8 @@
 import pymysql
 from decimal import Decimal
 import datetime
+import warnings
+from pymysql import err
 
 host = "academic-mysql.cc.gatech.edu"
 username = "cs4400_Group_33"
@@ -206,13 +208,27 @@ class Accessor:
         self.query(extSQL)
         return True
 
-    def futureHoldRequest(self, user, ISBN):
+    def futureHoldRequest(self, ISBN):
         # get copy num sorted by available date
-        sql = 'SELECT b.ISBN, (SELECT copy_num FROM Book_Copy AS c '\
-            'WHERE c.checked_out = 0 AND b.ISBN = c.ISBN) AS Copy '\
-            'FROM Book AS b WHERE ISBN = "%s" ORDER BY c.return_date'%ISBN
-        print(self.query(sql))
-        # take out books that already have a future hold request
+        # sql = 'SELECT b.ISBN, (SELECT copy_num FROM Book_Copy AS c '\
+        #     'WHERE c.checked_out = 0 AND b.ISBN = c.ISBN) AS Copy '\
+        #     'FROM Book AS b WHERE ISBN = "%s" ORDER BY c.return_date'%ISBN
+        sql = 'SELECT copy_num, return_date FROM Book_Copy '\
+                'WHERE checked_out = 1 '\
+                'AND ISBN = "%s" '\
+                'ORDER BY return_date LIMIT 1'
+        res = self.query(sql)
+        return res
+
+    def addFutureRequest(self, user, ISBN, copy):
+        sql = 'UPDATE '
+
+    def checkReturn(self, issue):
+        checkSQL = 'SELECT username, copy_num, ISBN FROM Issues '\
+                    'WHERE issue_id = %s'%issue
+        ans = self.query(checkSQL)
+        return ans[0]
+
 
 ##################### LOCATE #################################
 
@@ -490,7 +506,7 @@ class Accessor:
 dis = Accessor()
 
 
-res = dis.requestExtension(2)
+res = dis.futureHoldRequest("0-136-08620-9")
 print(res)
 
 
