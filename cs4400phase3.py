@@ -12,7 +12,7 @@ class Library:
 
     def LoginPage(self,win): #LoginPage(1)
         self.Login=win
-        self.Login.wm_title('Login')
+        self.Login.title('Login')
         f1=Frame(self.Login)
         f1.grid(column=1, row=1)
         f2=Frame(self.Login)
@@ -54,7 +54,7 @@ class Library:
     def Register(self): #NewRegistration(2)
         self.Login.withdraw()
         self.Register=Toplevel()
-        self.Register.wm_title('New User Registration')
+        self.Register.title('New User Registration')
 
         Label(self.Register, text='Username').grid(row=2,column=0,sticky=W)
         Label(self.Register, text='Password').grid(row=3,column=0,sticky=W)
@@ -92,7 +92,7 @@ class Library:
     def MakeProfile(self): #making new profile (3)
         self.Register.withdraw()
         self.makeProfile=Toplevel()
-        self.makeProfile.wm_title('Create Profile')
+        self.makeProfile.title('Create Profile')
 
         f1=Frame(self.makeProfile)
         f1.grid(row=4,column=1, columnspan=3)
@@ -174,7 +174,7 @@ class Library:
     def SearchBooks(self):
         self.Login.withdraw()
         self.Search=Toplevel()
-        self.Search.wm_title('Search Books')
+        self.Search.title('Search Books')
 
         self.ISBN=StringVar()
         self.Title=StringVar()
@@ -274,7 +274,7 @@ class Library:
     def RequestHold(self): #####################FIX GUI
         self.Search.withdraw()
         self.holdRequest=Toplevel()
-        self.holdRequest.wm_title('Hold Request for a Book')
+        self.holdRequest.title('Hold Request for a Book')
 
         Label(self.holdRequest, text='Books Available Summary').grid(row=1, column=1, sticky=W)
         frame=Frame(self.holdRequest,borderwidth=2, background='black')
@@ -420,7 +420,7 @@ class Library:
         if result==True:
             messagebox.showinfo('Success!','Your extension request has been accepted.')
         else:
-            messagebox.showerror('Error!','Your extensino request has been denied. You have reached the maximum amount of extensions.')
+            messagebox.showerror('Error!','Your extension request has been denied. You may have reached the maximum amount of extensions or there is already a future requester for this book.')
 
     def FutureHoldRequest(self):
         self.Menu.withdraw()
@@ -446,8 +446,8 @@ class Library:
         b3=Button(self.FutureHoldRequest, text='Back', command=self.fhrtomenu).grid(row=7, column=1, sticky=E)
         
     def checkISBN(self):
-        isbn=self.ISBN2.get()
-        data= self.a.futureHoldRequest(isbn)
+        data= self.a.futureHoldRequest(self.ISBN2.get())
+        print(data)
         self.availcopyNum.set(data[0])
         self.expectedAvailable.set(data[1])
 
