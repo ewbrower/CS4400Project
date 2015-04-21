@@ -151,12 +151,15 @@ class Accessor:
         copy = self.getNextAvailable(ISBN)
         print(copy)
         if copy is None:
+            print("this")
             return False
         # check to see if the user already future requested this book (not copy)
         if user in self.getFutureRequesters(ISBN):
+            print("future")
             return False
         # check to see if the user already checked out the book
         if not self.canCheckout(user, ISBN):
+            print("caint")
             return False
         issueSQL = 'INSERT INTO Issues (username, issue_date, '\
                 'extension_count, copy_num, return_date, ISBN) VALUES '\
