@@ -163,7 +163,8 @@ class Accessor:
         reqSQL = 'UPDATE Book_Copy SET future_requester = "%s", hold = 1 '\
         'WHERE ISBN = "%s" AND copy_num = %s'%(user, ISBN, copy)
         self.query(reqSQL)
-        return True
+        issueid = self.query('SELECT last_insert_id()')[0][0]
+        return issueid
 
     def requestExtension(self, issue):
         checkSQL = 'SELECT username, extension_count, copy_num, return_date, ISBN '\
@@ -175,13 +176,8 @@ class Accessor:
         copy_num = ans[0][2]
         retDate = ans[0][3] + datetime.timedelta(7)
         ISBN = ans[0][4]
-        # print(extCount)
-        # print(copy_num)
-        print(retDate)
-        # print(ISBN)
         # make sure they aren't extending too many times
         if extCount == 3 and self.isFaculty(user) == False:
-            print("extended three times already")
             return False
         elif extCount == 6:
             return False
@@ -205,6 +201,8 @@ class Accessor:
             'FROM Book AS b WHERE ISBN = "%s" ORDER BY c.return_date'%ISBN
         print(self.query(sql))
         # take out books that already have a future hold request
+
+##################### LOCATE #################################
 
     def locateBook(self, ISBN):
         sql = 'SELECT shelf, subject, '\
@@ -461,8 +459,7 @@ class Accessor:
 dis = Accessor()
 
 
-
-
+print(dis.holdRequest("ewbrower","0-123-81479-0"))
 
 
 
