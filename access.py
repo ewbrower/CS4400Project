@@ -328,6 +328,11 @@ class Accessor:
         lastuser = self.query(sql)
         return lastuser
 
+    def getName(self, user):
+        sql = 'SELECT fname, lname FROM Student_Faculty '\
+                'WHERE username = "%s"'%user
+        return self.query(sql)[0]
+
     def submitDamagedBook(self, user, ISBN, copy):
         self.brokenBook(user, ISBN, copy, True)
         return True
