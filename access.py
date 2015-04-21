@@ -127,12 +127,12 @@ class Accessor:
     def selectBooks(self, ISBN):
         heldSQL = 'SELECT b.ISBN, (SELECT count(*) FROM Book_Copy AS c '\
             'WHERE c.checked_out = 0 '\
-            'AND c.future_requester IS NOT NULL '\
+            'AND c.hold = 1 '\
             'AND b.ISBN = c.ISBN) AS Count '\
             'FROM Book AS b WHERE ISBN = "%s";'%ISBN
         unheldSQL = 'SELECT b.ISBN, (SELECT count(*) FROM Book_Copy AS c '\
             'WHERE c.checked_out = 0 '\
-            'AND c.future_requester IS NULL '\
+            'AND c.hold = 0 '\
             'AND b.ISBN = c.ISBN) AS Count '\
             'FROM Book AS b WHERE ISBN = "%s";'%ISBN
         metaSQL = 'SELECT title, edition FROM Book WHERE ISBN = "%s"'%ISBN
@@ -360,9 +360,24 @@ class Accessor:
         else:
             return False
 
-    def getCopies(self, ISBN):
-        # return 
-        pass
+    def getAvailableCopies(self, ISBN):
+        # return books not checkoed out and not held
+        sql = 'SELECT b.ISBN, (SELECT count(*) FROM Book_Copy AS c '\
+            'WHERE c.checked_out = 0 '\
+            'AND c.hold = 0 '\
+            'AND b.ISBN = c.ISBN) AS Count '\
+            'FROM Book AS b WHERE ISBN = "%s";'%ISBN
+        return self.query(sql)[0]
+
+    def getReservedCopies(self, ISBN):
+        # return books not checked out but on hold
+        # just need a number
+        sql = 'SELECT b.ISBN, (SELECT count(*) FROM Book_Copy AS c '\
+            'WHERE c.checked_out = 0 '\
+            'AND c.hold = 1 '\
+            'AND b.ISBN = c.ISBN) AS Count '\
+            'FROM Book AS b WHERE ISBN = "%s";'%ISBN
+        return self.query(sql)[0]
 
     def getNextAvailable(self, ISBN):
         bookData = self.selectBooks(ISBN)
