@@ -255,18 +255,12 @@ class Accessor:
         diff = datetime.date.today() - issueDate
         if diff.days > 3:
             return False
-        # check if that copy is damaged
-        damSQL = 'SELECT damaged FROM Book_Copy WHERE ISBN = "%s" '\
-            "AND copy_num = %s"%(ISBN, copy_num)
-        dam = self.query(damSQL)[0][0]
-        if dam == 1:
-            return False
         # then update Issues, add estimated return date +14
         issueSQL = 'UPDATE Issues SET return_date = DATE_ADD(return_date,'\
             'INTERVAL 14 DAY) WHERE issue_id = %s'%issue
         self.query(issueSQL)
-        copySQL = 'UPDATE Book_Copy SET checked_out = 1 WHERE ISBN = "%s" '\
-            'AND copy_num = %s'%(ISBN, copy_num)
+        copySQL = 'UPDATE Book_Copy SET checked_out = 1, hold = 0 '\
+            'WHERE ISBN = "%s" AND copy_num = %s'%(ISBN, copy_num)
         self.query(copySQL)
         return True
 
@@ -306,8 +300,8 @@ class Accessor:
         self.query(issueSQL)
         return True
 
-##### DAMAGED LOST BOOKS ###############
-    def brokenBook(self, user, ISBN, copy, damaged):
+############### DAMAGED LOST BOOKS ###############
+    def brokenBookOLD(self, user, ISBN, copy, damaged):
         # get price of the book
         costSQL = 'SELECT cost FROM Book WHERE ISBN = "%s"'%ISBN
         cost = self.query(costSQL)[0][0]
@@ -317,6 +311,12 @@ class Accessor:
         else:
             amount = float(cost)
         self.addPenalty(user, amount)
+        # get specific copy of book and do shit to it
+        sql = 'UPDATE Book_Copy SET damaged = 1 WHERE ISBN = "%s" '\
+            'AND copy_num = "%s"'%(ISBN,copy)
+        return self.query(sql)
+
+    def brokenBook(self, user, ISBN, copy, damaged):
         # get specific copy of book and do shit to it
         sql = 'UPDATE Book_Copy SET damaged = 1 WHERE ISBN = "%s" '\
             'AND copy_num = "%s"'%(ISBN,copy)
