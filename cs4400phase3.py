@@ -10,9 +10,9 @@ class Library:
         self.LoginPage(win)
         self.a=Accessor()
 
-    def LoginPage(self,win): #LoginPage(1)
+    def LoginPage(self,win): 
         self.Login=win
-        self.Login.wm_title('Login')
+        self.Login.title('Login')
         f1=Frame(self.Login)
         f1.grid(column=1, row=1)
         f2=Frame(self.Login)
@@ -42,7 +42,7 @@ class Library:
         staff=self.a.typeUser(user)
         return staff
 
-    def LoginCheck(self): #checking if information matches with database after hitting login(1)
+    def LoginCheck(self):
         User=self.Username.get()
         Psw=self.Psw.get()
         if self.a.login(User,Psw)==True:
@@ -51,10 +51,10 @@ class Library:
         else:
             messagebox.showerror('Error','You have entered an unrecognizable username/password combination.')
           
-    def Register(self): #NewRegistration(2)
+    def Register(self):
         self.Login.withdraw()
         self.Register=Toplevel()
-        self.Register.wm_title('New User Registration')
+        self.Register.title('New User Registration')
 
         Label(self.Register, text='Username').grid(row=2,column=0,sticky=W)
         Label(self.Register, text='Password').grid(row=3,column=0,sticky=W)
@@ -89,10 +89,10 @@ class Library:
             else:
                 messagebox.showerror('Error','Username already exists')
                       
-    def MakeProfile(self): #making new profile (3)
+    def MakeProfile(self): 
         self.Register.withdraw()
         self.makeProfile=Toplevel()
-        self.makeProfile.wm_title('Create Profile')
+        self.makeProfile.title('Create Profile')
 
         f1=Frame(self.makeProfile)
         f1.grid(row=4,column=1, columnspan=3)
@@ -120,7 +120,7 @@ class Library:
         e1=Entry(self.makeProfile, textvariable=self.FN)
         e1.grid(row=2,column=2, ipadx=30)
         mon=Entry(f1, textvariable=self.month)
-        mon.grid(row=1,column=2,ipadx=5)###something is still wrong here
+        mon.grid(row=1,column=2,ipadx=5)
         day=Entry(f1, textvariable=self.day)
         day.grid(row=1,column=4, ipadx=5)
         year=Entry(f1, textvariable=self.year)
@@ -174,7 +174,7 @@ class Library:
     def SearchBooks(self):
         self.Login.withdraw()
         self.Search=Toplevel()
-        self.Search.wm_title('Search Books')
+        self.Search.title('Search Books')
 
         self.ISBN=StringVar()
         self.Title=StringVar()
@@ -269,12 +269,15 @@ class Library:
 
         self.ListofDicts=self.a.search(ISBN, TITLE, AUTHOR, PUBLISHER, EDITION)
         newlist=[]
-        self.RequestHold()
+        if self.ListofDicts==None:
+            messagebox.showerror('Error','No books are available!')
+        else:
+            self.RequestHold()
         
     def RequestHold(self): #####################FIX GUI
         self.Search.withdraw()
         self.holdRequest=Toplevel()
-        self.holdRequest.wm_title('Hold Request for a Book')
+        self.holdRequest.title('Hold Request for a Book')
 
         Label(self.holdRequest, text='Books Available Summary').grid(row=1, column=1, sticky=W)
         frame=Frame(self.holdRequest,borderwidth=2, background='black')
@@ -356,14 +359,15 @@ class Library:
             messagebox.showinfo('Congrats!','Your hold has been placed. The issue Id is %s.'%abc)
         else:
             messagebox.showerror('Sorry','You can only place one hold per one book.')
-
+        ## different types of error - debarred, one hold per one book
+            
     def RequestExtension(self):
         self.Menu.withdraw()
         self.RequestExtension=Toplevel()
         self.RequestExtension.title('Request extension on a book')
 
         #need to add in the logic to check the issue ID and then unlock the text entries
-
+        #check that issue id matches username
         Label(self.RequestExtension, text='Enter your issue_id').grid(row=2, column=0, sticky=E)
         self.issueID = StringVar()
         e1=Entry(self.RequestExtension, textvariable=self.issueID).grid(row=2,column=1,ipadx=30)        
@@ -420,13 +424,16 @@ class Library:
         if result==True:
             messagebox.showinfo('Success!','Your extension request has been accepted.')
         else:
-            messagebox.showerror('Error!','Your extensino request has been denied. You have reached the maximum amount of extensions.')
+            messagebox.showerror('Error!','Your extension request has been denied. You may have reached the maximum amount of extensions or there is already a future requester for this book.')
 
     def FutureHoldRequest(self):
         self.Menu.withdraw()
         self.FutureHoldRequest=Toplevel()
         self.FutureHoldRequest.title("Future Hold Request for a Book")
-
+        #hold request on anything that is not available and on hold
+        # if book is actually available - throws an error
+        ##still not really working - expected available date
+        #ok submits future req
         Label(self.FutureHoldRequest,text="ISBN").grid(row=2,column=0,sticky=E)
         self.ISBN2 = StringVar()
         e1=Entry(self.FutureHoldRequest,textvariable=self.ISBN2).grid(row=2,column=1,ipadx=30)
@@ -446,14 +453,13 @@ class Library:
         b3=Button(self.FutureHoldRequest, text='Back', command=self.fhrtomenu).grid(row=7, column=1, sticky=E)
         
     def checkISBN(self):
-        isbn=self.ISBN2.get()
-        data= self.a.futureHoldRequest(isbn)
+        data= self.a.futureHoldRequest(self.ISBN2.get())
         self.availcopyNum.set(data[0])
         self.expectedAvailable.set(data[1])
 
     def futureReq(self):
         user=self.Username.get()
-        
+        #still doesn't work!
 
     def fhrtomenu(self):
         self.FutureHoldRequest.withdraw()

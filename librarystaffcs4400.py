@@ -53,17 +53,20 @@ class LibraryStaff:
 
     def updatecheckoutPage(self):
         issueid=self.isid.get()
-        data=self.a.searchforCheckOut(issueid)
-        self.isBN.set(data[2])
-        self.un.set(data[0])
-        self.copyn.set(data[1])
+        data=self.a.getIssue(issueid)
+        self.isBN.set(data[0][7])
+        self.un.set(data[0][0])
+        self.copyn.set(data[0][5])
         date=datetime.datetime.strftime(datetime.datetime.now(),'%m/%d/%y')
         self.CODate.set(date)
         self.erd.set(datetime.datetime.strftime(datetime.datetime.now()+datetime.timedelta(days=14),'%m/%d/%y'))
         
-    def checkout(self):
-        self.a.checkoutBook(uname,isbn,copynum)
-
+    def checkout(self): #also needs to check that issue id hasn't been checked out yet
+        issueid=self.isid.get()
+        data=self.a.checkoutBook(issueid)
+        if data==True:
+            messagebox.showinfo('Success!','Book has been checked out.')
+            self.backfromcheckout()
 
     def backfromcheckout(self):
         self.CheckOut.withdraw()
@@ -112,14 +115,17 @@ class LibraryStaff:
         isbn=self.lostbook.get()
         copy=self.lostcopy.get()
         self.luser=self.a.lastUser(isbn, copy)
-        self.lastuser.set(str(self.luser[1]+' '+self.luser[2]))
+        data=self.a.getName(self.luser[0][0])
+        self.lastuser.set(str(data[0]+' '+data[1]))
 
     def submitchange(self):
-        user=self.luser[0]
+        user=self.luser[0][0]
         amount=self.amount.get()
         self.a.updatePenalty(amount,user)
-    
-    def ReturnBook(self):
+        messagebox.showinfo('Success','Penalty has been entered.')
+        self.cancel()
+        
+    def ReturnBook(self): #need to check that the id has not been returned & that it has been checked out
         self.Page.withdraw()
         self.ReturnBook=Toplevel()
         self.ReturnBook.title("Return Book")
@@ -128,17 +134,18 @@ class LibraryStaff:
         self.issueID=StringVar()
         e1=Entry(self.ReturnBook,textvariable=self.issueID).grid(row=2,column=1,ipadx=30)
 
+        Button(self.ReturnBook, text='Find Issue ID', command=self.find).grid(row=2, column=2)
         Label(self.ReturnBook,text="ISBN").grid(row=3,column=0,sticky=E)
-        self.ISBN=StringVar()
-        e2=Entry(self.ReturnBook,textvariable=self.ISBN,state='readonly').grid(row=3,column=1,ipadx=30)
+        self.ISBNx=StringVar()
+        e2=Entry(self.ReturnBook,textvariable=self.ISBNx,state='readonly').grid(row=3,column=1,ipadx=30)
 
         Label(self.ReturnBook,text='Return in Damaged Condition').grid(row=4,column=0,sticky=E)
         self.YN = StringVar()
         w=OptionMenu(self.ReturnBook, self.YN, "Y","N").grid(row=4,column=1)
 
         Label(self.ReturnBook,text='Copy Number').grid(row=3,column=2,sticky=E)
-        self.copyNum = StringVar()
-        e3=Entry(self.ReturnBook,textvariable=self.copyNum,state="readonly").grid(row=3,column=3,ipadx=30)
+        self.copyNumx = StringVar()
+        e3=Entry(self.ReturnBook,textvariable=self.copyNumx,state="readonly").grid(row=3,column=3,ipadx=30)
 
         Label(self.ReturnBook,text="User Name").grid(row=4,column=2,sticky=E)
         self.userName = StringVar()
@@ -151,15 +158,26 @@ class LibraryStaff:
         self.ReturnBook.withdraw()
         self.Page.deiconify()
 
+    def find(self):
+        issueID=self.issueID.get()
+        data=self.a.checkData(issueID)
+        self.ISBNx.set(data[3])
+        self.copyNumx.set(data[2])
+        self.userName.set(data[0])
+        
     def returnb(self):
         issueID=self.issueID.get()
-        isbn=self.ISBN.get()
         YN=self.YN.get()
-        copynum=self.copyNum.get()
         usern=self.userName.get()
-        self.a.returnBook(usern,isbn, copynum)
+        isbn=self.ISBNx.get()
+        data=self.a.returnBook(issueID)
+        copynum=self.copyNumx.get()
         if YN=='Y':
             self.a.submitDamagedBook(usern, isbn, copynum)
+            self.LostDamagedPage()
+        if data==True:
+            messagebox.showinfo('Success','Book has been returned.')
+            self.backfromretunr()
         
     def ReportsPage(self):
         self.Page.withdraw()
@@ -188,7 +206,6 @@ class LibraryStaff:
         Label(f1, text='Month').grid(row=1,column=1)
         OptionMenu(f1, self.month, 'January','February','March').grid(row=1,column=2)
 
-        
         Label(f1, text='Subject').grid(row=1,column=3)
         Label(f1, text='Subject').grid(row=2,column=3)
         Label(f1, text='Subject').grid(row=3,column=3)
