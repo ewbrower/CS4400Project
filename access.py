@@ -341,9 +341,9 @@ class Accessor:
         self.brokenBook(user, ISBN, copy, False)
         return True
 
-    def updatePenalty(self, user):
+    def updatePenalty(self, amount, user):
         sql = 'UPDATE Student_Faculty SET penalty = %s '\
-            'WHERE username = "%s"'%user
+            'WHERE username = "%s"'%(amount, user)
         self.query(sql)
         return True
 
