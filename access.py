@@ -128,11 +128,13 @@ class Accessor:
         heldSQL = 'SELECT b.ISBN, (SELECT count(*) FROM Book_Copy AS c '\
             'WHERE c.checked_out = 0 '\
             'AND c.hold = 1 '\
+            'AND c.damaged = 0 '\
             'AND b.ISBN = c.ISBN) AS Count '\
             'FROM Book AS b WHERE ISBN = "%s";'%ISBN
         unheldSQL = 'SELECT b.ISBN, (SELECT count(*) FROM Book_Copy AS c '\
             'WHERE c.checked_out = 0 '\
             'AND c.hold = 0 '\
+            'AND c.damaged = 0 '\
             'AND b.ISBN = c.ISBN) AS Count '\
             'FROM Book AS b WHERE ISBN = "%s";'%ISBN
         metaSQL = 'SELECT title, edition FROM Book WHERE ISBN = "%s"'%ISBN
@@ -151,15 +153,15 @@ class Accessor:
         copy = self.getNextAvailable(ISBN)
         print(copy)
         if copy is None:
-            print("this")
+            print("no book copy available")
             return False
         # check to see if the user already future requested this book (not copy)
         if user in self.getFutureRequesters(ISBN):
-            print("future")
+            print("already a future requester for this book")
             return False
         # check to see if the user already checked out the book
         if not self.canCheckout(user, ISBN):
-            print("caint")
+            print("cnanot check out another copy of this ISBN")
             return False
         issueSQL = 'INSERT INTO Issues (username, issue_date, '\
                 'extension_count, copy_num, return_date, ISBN) VALUES '\
