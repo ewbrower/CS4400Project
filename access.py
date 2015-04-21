@@ -158,10 +158,22 @@ class Accessor:
         if not self.canCheckout(user, ISBN):
             return False
         issueSQL = 'INSERT INTO Issues (username, issue_date, '\
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+>>>>>>> 103082721baacfadedc2937131bddb964e95f935
                 'extension_count, copy_num, return_date, ISBN) VALUES '\
                 '("%s", CURDATE(), 0, %s, '\
                 'DATE_ADD(CURDATE(), INTERVAL 17 DAY), "%s")'\
                 %(user, copy, ISBN)
+<<<<<<< HEAD
+=======
+=======
+            'extension_count, copy_num, return_date, ISBN) VALUES '\
+            '("%s", CURDATE(), 0, %s, DATE_ADD(CURDATE(), INTERVAL 17 DAY), '\
+            '"%s")'%(user, copy, ISBN)
+>>>>>>> 76c601ab3151c6767a77e42de1e9750523f37587
+>>>>>>> 103082721baacfadedc2937131bddb964e95f935
         self.query(issueSQL)
         # now update that specific copy of the book (NIX THIS)
         reqSQL = 'UPDATE Book_Copy SET hold = 1 WHERE ISBN = "%s" '\
