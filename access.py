@@ -221,7 +221,11 @@ class Accessor:
         return res[0]
 
     def addFutureRequest(self, user, ISBN, copy):
-        sql = 'UPDATE '
+        sql = 'UPDATE Book_Copy SET future_requester = "%s" '\
+                'WHERE ISBN = "%s" AND copy_num = %s'\
+                %(user, ISBN, copy)
+        self.query(sql)
+        return True
 
     def checkReturn(self, issue):
         checkSQL = 'SELECT username, copy_num, ISBN FROM Issues '\
@@ -275,9 +279,8 @@ class Accessor:
         return dateList
         
     def returnBook(self, issue):
-        # check to see if current date is past return date,
+        # check to see if current date is past return date
         today = datetime.date.today()
-        # print(today)
         issueSQL = 'SELECT username, copy_num, return_date, ISBN '\
             'FROM Issues WHERE issue_id = %s'%issue
         user, copy, retDate, ISBN = self.query(issueSQL)[0]
@@ -286,10 +289,15 @@ class Accessor:
             diff = today - retDate
             amount = diff.days * 0.5
             self.addPenalty(user, amount)
+        # update copy of the book
         retSQL = 'UPDATE Book_Copy SET checked_out = 0 '\
             'WHERE ISBN = "%s" AND copy_num = %s'%(ISBN, copy)
         # add new return date in issues
         self.query(retSQL)
+        # update the issue to make it accurate
+        issueSQL = 'UPDATE Issues SET return_date = "%s" '\
+                    'WHERE issue_id = %s'%(today, issue)
+        self.query(issueSQL)
         return True
 
 ##### DAMAGED LOST BOOKS ###############
@@ -508,12 +516,13 @@ class Accessor:
 dis = Accessor()
 
 
-res = dis.futureHoldRequest("0-136-08620-9")
-print(res)
-res = dis.futureHoldRequest("1-285-19614-7")
-print(res)
-res = dis.futureHoldRequest("0-553-59354-4")
-print(res)
+dis.returnBook("123")
+
+
+
+
+
+
 
 
 
