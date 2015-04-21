@@ -267,15 +267,11 @@ class Library:
         if EDITION=='':
             EDITION=None
 
-        data=self.a.search(ISBN, TITLE, AUTHOR, PUBLISHER, EDITION)
+        self.ListofDicts=self.a.search(ISBN, TITLE, AUTHOR, PUBLISHER, EDITION)
         newlist=[]
+        self.RequestHold()
         
-        for i in data:
-            copies=self.a.getCopies(i[0])
-            newlist.append([i[0],i[1],i[3],copies[0]])
-        self.RequestHold(newlist)
-        
-    def RequestHold(self, data): #####################FIX GUI
+    def RequestHold(self): #####################FIX GUI
         self.Search.withdraw()
         self.holdRequest=Toplevel()
         self.holdRequest.wm_title('Hold Request for a Book')
@@ -289,20 +285,26 @@ class Library:
         Label(frame, text='Edition',width=5).grid(row=1,column=4,sticky=E+W,ipadx=1)
         Label(frame, text='# copies available',width=10).grid(row=1,column=5,sticky=E+W, ipadx=1)
 
-        self.BooksFound=data
-        print(data)
-        self.selected=[]
-        self.var=StringVar()
-        i=0
         
-        while i<len(self.BooksFound):
-            self.r=Radiobutton(frame, variable=self.var, value=self.BooksFound[i])
+        self.var=StringVar()
+        aList=self.ListofDicts
+        available=[]
+        reserve=[]
+        for i in aList:
+            if i['unheld']==0:
+                reserve.append([i['ISBN'], i['title'],i['edition'],i['held']])
+            else:
+                available.append([i['ISBN'], i['title'],i['edition'],i['unheld']])
+            
+        i=0
+        while i<len(available):
+            self.r=Radiobutton(frame, variable=self.var, value=available[i])
             self.r.deselect()
             self.r.grid(row=i+2,column=1)
-            Label(frame,text=self.BooksFound[i][0],width=10).grid(row=i+2,column=2, ipadx=1)
-            Label(frame,text=self.BooksFound[i][1],width=40).grid(row=i+2,column=3, ipadx=1)
-            Label(frame,text=self.BooksFound[i][2],width=5).grid(row=i+2,column=4, ipadx=1)
-            Label(frame,text=self.BooksFound[i][3],width=5).grid(row=i+2,column=5, ipadx=1)
+            Label(frame,text=available[i][0],width=10).grid(row=i+2,column=2, ipadx=1)
+            Label(frame,text=available[i][1],width=40).grid(row=i+2,column=3, ipadx=1)
+            Label(frame,text=available[i][2],width=5).grid(row=i+2,column=4, ipadx=1)
+            Label(frame,text=available[i][3],width=5).grid(row=i+2,column=5, ipadx=1)
             i+=1
             
         frame2=Frame(self.holdRequest)
@@ -327,7 +329,6 @@ class Library:
         ttk.Separator(self.holdRequest, orient=HORIZONTAL).grid(row=5,column=0,columnspan=6, sticky=E+W)
 
         Label(self.holdRequest,text='Books on Reserve').grid(row=6,column=1,sticky=W)
-        self.BooksReserved=self.BooksFound
         a=0
         frame3=Frame(self.holdRequest,borderwidth=2, relief=RIDGE,bg='grey')
         frame3.grid(row=7,column=1, columnspan=6)
@@ -336,11 +337,11 @@ class Library:
         Label(frame3, text='Edition',bd=1, relief=RIDGE,bg='grey').grid(row=1,column=3,sticky=E+W)
         Label(frame3, text='# copies available',bd=1, relief=RIDGE,bg='grey').grid(row=1,column=4,sticky=E+W)
 
-        while a<len(self.BooksReserved):
-            Label(frame3,text=self.BooksReserved[a][0],bd=1, relief=RIDGE,bg='grey').grid(row=a+2,column=1)
-            Label(frame3,text=self.BooksReserved[a][1],bd=1, relief=RIDGE,bg='grey').grid(row=a+2,column=2)
-            Label(frame3,text=self.BooksReserved[a][2],bd=1, relief=RIDGE,bg='grey').grid(row=a+2,column=3)
-            Label(frame3,text=self.BooksReserved[a][3],bd=1, relief=RIDGE,bg='grey').grid(row=a+2,column=4)
+        while a<len(reserve):
+            Label(frame3,text=reserve[a][0],bd=1, relief=RIDGE,bg='grey').grid(row=a+2,column=1)
+            Label(frame3,text=reserve[a][1],bd=1, relief=RIDGE,bg='grey').grid(row=a+2,column=2)
+            Label(frame3,text=reserve[a][2],bd=1, relief=RIDGE,bg='grey').grid(row=a+2,column=3)
+            Label(frame3,text=reserve[a][3],bd=1, relief=RIDGE,bg='grey').grid(row=a+2,column=4)
             a+=1
 
     def returntoSearch(self):
@@ -350,6 +351,7 @@ class Library:
     def holdrequest(self): ####TEST
         booktohold=self.var.get()
         user=self.Username.get()
+        print(booktohold[0])
         abc=self.a.holdRequest(user,booktohold[0])
         if abc==True:
             messagebox.showinfo('Congrats!','Your hold has been placed')
@@ -400,7 +402,7 @@ class Library:
         self.RequestExtension.withdraw()
         self.Menu.deiconify()
         
-    def calcEx(self): ##WORKS
+    def calcEx(self): ##WORK
         issueid=self.issueID.get()
         data=self.a.getIssueData(issueid)
         print(data)
@@ -469,9 +471,9 @@ class Library:
         Label(self.locate,text='Shelf Number').grid(row=5,column=3)
         Label(self.locate,text='Subject').grid(row=6,column=3)
 
-        self.floorno=IntVar()
-        self.aisleno=IntVar()
-        self.shelfno=IntVar()
+        self.floorno=StringVar()
+        self.aisleno=StringVar()
+        self.shelfno=StringVar()
         self.subj=StringVar()
 
         Entry(self.locate,textvariable=self.floorno, state='readonly').grid(row=5,column=2, ipadx=20)
