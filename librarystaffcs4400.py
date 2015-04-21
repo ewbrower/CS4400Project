@@ -61,7 +61,7 @@ class LibraryStaff:
         self.CODate.set(date)
         self.erd.set(datetime.datetime.strftime(datetime.datetime.now()+datetime.timedelta(days=14),'%m/%d/%y'))
         
-    def checkout(self):
+    def checkout(self): #also needs to check that issue id hasn't been checked out yet
         issueid=self.isid.get()
         data=self.a.checkoutBook(issueid)
         if data==True:
@@ -125,7 +125,7 @@ class LibraryStaff:
         messagebox.showinfo('Success','Penalty has been entered.')
         self.cancel()
         
-    def ReturnBook(self):
+    def ReturnBook(self): #need to check that the id has not been returned & that it has been checked out
         self.Page.withdraw()
         self.ReturnBook=Toplevel()
         self.ReturnBook.title("Return Book")
