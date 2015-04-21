@@ -323,7 +323,7 @@ class Accessor:
         return self.query(sql)
 
     def lastUser(self, ISBN, copy):
-        sql = 'SELECT username FROM Issues WHERE ISBN = %s AND copy_num=%s '\
+        sql = 'SELECT username FROM Issues WHERE ISBN = "%s" AND copy_num=%s '\
             'ORDER BY issue_date DESC LIMIT 1'%(ISBN,copy)
         lastuser = self.query(sql)
         return lastuser
