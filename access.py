@@ -135,9 +135,12 @@ class Accessor:
             'AND c.future_requester IS NULL '\
             'AND b.ISBN = c.ISBN) AS Count '\
             'FROM Book AS b WHERE ISBN = "%s";'%ISBN
+        metaSQL = 'SELECT title, edition FROM Book WHERE ISBN = "%s"'%ISBN
         held = self.query(heldSQL)[0]
         unheld = self.query(unheldSQL)[0]
-        res = {"ISBN" : ISBN, "held" : held[1], "unheld" : unheld[1]}
+        title, edition = self.query(metaSQL)[0]
+        res = {"ISBN" : ISBN, "held" : held[1], "unheld" : unheld[1],
+                "title": title, "edition": edition}
         return res
 
 ####################### REQUESTS
@@ -353,6 +356,10 @@ class Accessor:
             return True
         else:
             return False
+
+    def getCopies(self, ISBN):
+        # return 
+        pass
 
     def getNextAvailable(self, ISBN):
         bookData = self.selectBooks(ISBN)
