@@ -476,6 +476,14 @@ class Accessor:
         else:
             raise False
 
+    def validateIssue(self, user, issueid):
+        sql = 'SELECT username FROM Issues WHERE issue_id = %s'%issueid
+        dataName = self.query(sql)[0][0]
+        if user == dataName:
+            return True
+        else:
+            return False
+
     def addPenalty(self, user, amount):
         penaltySQL = 'SELECT penalty FROM Student_Faculty WHERE '\
             'username = "%s"'%user
