@@ -261,6 +261,7 @@ class Accessor:
         user, issueDate, copy_num, ISBN = self.checkData(issue)
         diff = datetime.date.today() - issueDate
         if diff.days > 3:
+            self.dropHold(issue)
             return False
         # then update Issues, add estimated return date +14
         issueSQL = 'UPDATE Issues SET return_date = DATE_ADD(return_date,'\
@@ -326,6 +327,13 @@ class Accessor:
             return True
         else:
             return False
+
+    def dropHold(self, issue):
+        sql = 'SELECT ISBN, copy_num FROM Issues WHERE issue_id = %s'%issue
+        ISBN, copy = self.query(sql)[0]
+        sql = 'UPDATE Book_Copy SET hold = 0 WHERE ISBN = "%s" AND '\
+                'copy_num = %s'%(ISBN, copy)
+        return self.query(sql)
 
 ############### DAMAGED LOST BOOKS ###############
     def brokenBookOLD(self, user, ISBN, copy, damaged):
