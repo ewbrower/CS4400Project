@@ -474,7 +474,7 @@ class Accessor:
         if res == 1:
             return True
         else:
-            raise False
+            return False
 
     def validateIssue(self, user, issueid):
         sql = 'SELECT username FROM Issues WHERE issue_id = %s'%issueid
