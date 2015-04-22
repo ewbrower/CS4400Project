@@ -203,8 +203,9 @@ class Accessor:
             print("%s is already a future_requester"%future)
             return False
         # update the issue_id with the larger extension
-        extSQL = 'UPDATE Issues SET extension_count = %s, return_date = "%s" '\
-            'WHERE issue_id = %s'%(extCount, retDate, issue)
+        extSQL = 'UPDATE Issues SET extension_count = %s, return_date = "%s", '\
+            'extension_date = CURDATE() WHERE issue_id = %s'\
+            %(extCount, retDate, issue)
         self.query(extSQL)
         return True
 
@@ -576,28 +577,20 @@ class Accessor:
 dis = Accessor()
 
 
-# print(dis.futureRequestable("0-123-81479-0"))
-# print(dis.getCopyMeta("0-123-81479-0",0,1))
-# print(dis.getCopyMeta("0-123-81479-0",1,0))
-
-# print(dis.futureHoldRequest("0-136-08620-9"))
-
-
-# sql = dis.searchAuthor({"author":"Addison", "ISBN":"0-136-08620-9"})
-# print(dis.query(sql))
-# sql = dis.searchAuthor({"author":"S", "ISBN":None})
-# print(dis.query(sql))
 
 
 
 
 
 
-# metaSQL = 'SELECT title, edition, reserve FROM Book WHERE ISBN = "0-140-44430-0"'
-# title, edition, reserve = dis.query(metaSQL)[0]
-# print(title)
-# print(edition)
-# print(reserve)
+
+
+
+
+
+
+
+
 
 
 
