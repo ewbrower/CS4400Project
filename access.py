@@ -446,6 +446,8 @@ class Accessor:
         return self.query(sql)[0][0]
 
     def futureRequestable(self, ISBN):
+        if self.getCopyMeta(ISBN, 0, 0) > 0:
+            return False
         if self.getCopyMeta(ISBN, 0, 1) > 0 or self.getCopyMeta(ISBN, 1,0) > 0:
             return True
         return False
