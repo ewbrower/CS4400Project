@@ -264,7 +264,7 @@ class Accessor:
             self.dropHold(issue)
             return False
         # then update Issues, add estimated return date +14
-        issueSQL = 'UPDATE Issues SET return_date = DATE_ADD(return_date,'\
+        issueSQL = 'UPDATE Issues SET return_date = DATE_ADD(CURDATE(),'\
             'INTERVAL 14 DAY) WHERE issue_id = %s'%issue
         self.query(issueSQL)
         copySQL = 'UPDATE Book_Copy SET checked_out = 1, hold = 0 '\
