@@ -333,6 +333,9 @@ class Accessor:
         ISBN, copy = self.query(sql)[0]
         sql = 'UPDATE Book_Copy SET hold = 0 WHERE ISBN = "%s" AND '\
                 'copy_num = %s'%(ISBN, copy)
+        self.query(sql)
+        sql = 'UPDATE Issues SET issue_date = CURDATE() WHERE issue_id = %s'\
+                %issue
         return self.query(sql)
 
 ############### DAMAGED LOST BOOKS ###############
