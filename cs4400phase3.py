@@ -3,7 +3,7 @@ from tkinter import ttk
 from access import Accessor
 import datetime
 from librarystaffcs4400 import LibraryStaff
-from tkinter import messagebox
+
 
 class Library:
 
@@ -275,7 +275,7 @@ class Library:
         else:
             self.RequestHold()
         
-    def RequestHold(self): #####################FIX GUI
+    def RequestHold(self): 
         self.Search.withdraw()
         self.holdRequest=Toplevel()
         self.holdRequest.title('Hold Request for a Book')
@@ -292,11 +292,13 @@ class Library:
         
         self.var=StringVar()
         aList=self.ListofDicts
+        print(aList)
         available=[]
         reserve=[]
         for i in aList:
-            if i['unheld']==0:
-                reserve.append([i['ISBN'], i['title'],i['edition'],i['held']])
+            print(i['reserve'])
+            if i['reserve']==1:
+                reserve.append([i['ISBN'], i['title'],i['edition'],i['unheld']])
             else:
                 available.append([i['ISBN'], i['title'],i['edition'],i['unheld']])
             
@@ -361,13 +363,13 @@ class Library:
         elif abc=='debarred':
             messagebox.showerror('Sorry','You have been debarred. You cannot borrow any books.')
         else:
-            messagebox.showerror('Sorry','You can only place one hold per one book.')
+            messagebox.showerror('Sorry','You cannot hold a request on this book.')
             
     def RequestExtension(self):
         self.Menu.withdraw()
         self.RequestExtension=Toplevel()
         self.RequestExtension.title('Request extension on a book')
-        #check that issue id matches username
+        
         Label(self.RequestExtension, text='Enter your issue_id').grid(row=2, column=0, sticky=E)
         self.issueID = StringVar()
         e1=Entry(self.RequestExtension, textvariable=self.issueID).grid(row=2,column=1,ipadx=30)        
@@ -408,17 +410,22 @@ class Library:
         
     def calcEx(self): 
         issueid=self.issueID.get()
-        data=self.a.getIssueData(issueid)
-        self.checkoutDate.set(data[0][0])
-        if data[0][1]==None:
-            self.currentExtension.set(data[0][0])
+        usern=self.Username.get()
+        validate=self.a.validateIssue(usern, issueid)
+        if validate == True:        
+            data=self.a.getIssueData(issueid)
+            self.checkoutDate.set(data[0][0])
+            if data[0][1]==None:
+                self.currentExtension.set(data[0][0])
+            else:
+                self.currentExtension.set(data[0][1])
+            self.returnDate.set(data[0][2])
+            self.newExtension.set(datetime.datetime.strftime(datetime.datetime.now(),'20%y-%m-%d'))
+            self.newReturnDate.set(datetime.datetime.strftime(datetime.datetime.now()+datetime.timedelta(days=17),'20%y-%m-%d'))
         else:
-            self.currentExtension.set(data[0][1])
-        self.returnDate.set(data[0][2])
-        self.newExtension.set(datetime.datetime.strftime(datetime.datetime.now(),'%y-%d-%m'))
-        self.newReturnDate.set(datetime.datetime.strftime(datetime.datetime.now()+datetime.timedelta(days=17),'%y-%d-%m'))
+            messagebox.showerror('Error','This is not your issueid')
 
-    def requestEx(self): 
+    def requestEx(self):
         issueid=self.issueID.get()
         result=self.a.requestExtension(issueid)
         if result==True:
@@ -430,10 +437,7 @@ class Library:
         self.Menu.withdraw()
         self.FutureHoldRequest=Toplevel()
         self.FutureHoldRequest.title("Future Hold Request for a Book")
-        #hold request on anything that is not available and on hold
-        # if book is actually available - throws an error
-        ##still not really working - expected available date
-        #ok submits future req
+
         Label(self.FutureHoldRequest,text="ISBN").grid(row=2,column=0,sticky=E)
         self.ISBN2 = StringVar()
         e1=Entry(self.FutureHoldRequest,textvariable=self.ISBN2).grid(row=2,column=1,ipadx=30)
@@ -453,13 +457,21 @@ class Library:
         b3=Button(self.FutureHoldRequest, text='Back', command=self.fhrtomenu).grid(row=7, column=1, sticky=E)
         
     def checkISBN(self):
-        data= self.a.futureHoldRequest(self.ISBN2.get())
-        self.availcopyNum.set(data[0])
-        self.expectedAvailable.set(data[1])
+        isbn=self.ISBN2.get()
+        data= self.a.futureHoldRequest(isbn)
+        if data == False:
+            messagebox.showerror('Error','This book is available.')
+            self.availcopyNum.set('')
+            self.expectedAvailable.set('')
+        else:   
+            self.availcopyNum.set(data[0])
+            self.expectedAvailable.set(data[1])
 
     def futureReq(self):
         user=self.Username.get()
-        #still doesn't work!
+        copy=self.availcopyNum.get()
+        ISBN=self.ISBN2.get()
+        self.a.addFutureRequest(user, ISBN, copy)
 
     def fhrtomenu(self):
         self.FutureHoldRequest.withdraw()

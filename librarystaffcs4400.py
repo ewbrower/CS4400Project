@@ -5,7 +5,6 @@ import urllib.request
 from urllib import *
 from access import Accessor
 import datetime
-from tkinter import messagebox
 
 class LibraryStaff:
 
@@ -55,19 +54,37 @@ class LibraryStaff:
     def updatecheckoutPage(self):
         issueid=self.isid.get()
         data=self.a.getIssue(issueid)
-        self.isBN.set(data[0][7])
-        self.un.set(data[0][0])
-        self.copyn.set(data[0][5])
-        date=datetime.datetime.strftime(datetime.datetime.now(),'%m/%d/%y')
-        self.CODate.set(date)
-        self.erd.set(datetime.datetime.strftime(datetime.datetime.now()+datetime.timedelta(days=14),'%m/%d/%y'))
-        
-    def checkout(self): #also needs to check that issue id hasn't been checked out yet
+        print(data)
+        if data==False:
+            messagebox.showerror('Error!','Book has already been checked out!')
+        elif data[0][6]<datetime.date.today():
+            messagebox.showerror('Error!','Book has already been returned.')
+        else:
+            self.isBN.set(data[0][7])
+            self.un.set(data[0][0])
+            self.copyn.set(data[0][5])
+            date=datetime.datetime.strftime(datetime.datetime.now(),'%m/%d/%y')
+            self.CODate.set(date)
+            self.erd.set(datetime.datetime.strftime(datetime.datetime.now()+datetime.timedelta(days=14),'%m/%d/%y'))
+            
+    def checkout(self): 
         issueid=self.isid.get()
         data=self.a.checkoutBook(issueid)
         if data==True:
             messagebox.showinfo('Success!','Book has been checked out.')
             self.backfromcheckout()
+        else:
+            messagebox.showerror('Error.','Your hold has been dropped as it has passed your 3 days grace-period')
+            if (self.a.returned(issueid)==True):
+                avail= messagebox.askyesno('Book is still available','Do you want to borrow it?')
+                if avail=='yes':
+                    data=self.a.checkoutBook(issueid)
+                    if data==True:
+                         messagebox.showinfo('Success!','Book has been checked out.')
+                         self.backfromcheckout()
+            else:
+                self.backfromcheckout()
+                   
 
     def backfromcheckout(self):
         self.CheckOut.withdraw()
@@ -178,7 +195,7 @@ class LibraryStaff:
             self.LostDamagedPage()
         if data==True:
             messagebox.showinfo('Success','Book has been returned.')
-            self.backfromretunr()
+            self.backfromreturn()
         
     def ReportsPage(self):
         self.Page.withdraw()
