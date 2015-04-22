@@ -293,6 +293,9 @@ class Accessor:
         return issueList
         
     def returnBook(self, issue):
+        # check if issueid has been returned already
+        if self.returned(issue) == True:
+            return False
         # check to see if current date is past return date
         today = datetime.date.today()
         issueSQL = 'SELECT username, copy_num, return_date, ISBN '\
@@ -313,6 +316,16 @@ class Accessor:
                     'WHERE issue_id = %s'%(today, issue)
         self.query(issueSQL)
         return True
+
+    def returned(self, issue):
+        sql = 'SELECT ISBN, copy_num FROM Issues WHERE issue_id = %s'%isssue
+        ISBN, copy = self.query(sql)[0]
+        ret = 'SELECT checked_out FROM Book_Copy WHERE '\
+                'ISBN = "%s" AND copy_num = %s'%(ISBN, copy)
+        if self.query(ret)[0][0] == 1:
+            return True
+        else:
+            return False
 
 ############### DAMAGED LOST BOOKS ###############
     def brokenBookOLD(self, user, ISBN, copy, damaged):
