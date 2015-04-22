@@ -86,7 +86,7 @@ class Accessor:
         terms = dict(locals())
         terms.pop("self", None)
         if terms["author"] != None:
-            sql = self.searchAuthor(terms)
+            sql = self.searchAuthor(terms["author"])
         else:
             sql = self.searchBook(terms)
         # use the sql to get a list of ISBNs
@@ -106,10 +106,10 @@ class Accessor:
             return resList
 
     def searchAuthor(self, terms):
-        sql = 'SELECT ISBN FROM Author AS b '\
-            'WHERE author LIKE "%%%s%%"'%(terms["author"])
+        sql = 'SELECT ISBN FROM Author '\
+            'WHERE author LIKE "%%%s%%" '%terms["author"]
         if terms["ISBN"] != None:
-            sql += ' WHERE ISBN LIKE "%%%s%%" '%ISBN
+            sql += 'AND ISBN LIKE "%%%s%%" '%terms["ISBN"]
         return sql
 
     def searchBook(self, terms):
@@ -580,10 +580,13 @@ dis = Accessor()
 # print(dis.getCopyMeta("0-123-81479-0",0,1))
 # print(dis.getCopyMeta("0-123-81479-0",1,0))
 
-print(dis.futureHoldRequest("0-136-08620-9"))
+# print(dis.futureHoldRequest("0-136-08620-9"))
 
 
-
+# sql = dis.searchAuthor({"author":"Addison", "ISBN":"0-136-08620-9"})
+# print(dis.query(sql))
+# sql = dis.searchAuthor({"author":"S", "ISBN":None})
+# print(dis.query(sql))
 
 
 
