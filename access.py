@@ -210,6 +210,8 @@ class Accessor:
 
     def futureHoldRequest(self, ISBN):
         # get copy num sorted by available date
+        if self.futureRequestable(ISBN) == False:
+            return False
         sql = 'SELECT c.copy_num, i.return_date '\
                 'FROM Book_Copy AS c '\
                 'INNER JOIN Issues AS i ON c.ISBN = i.ISBN '\
@@ -234,7 +236,7 @@ class Accessor:
         return ans[0]
 
 
-##################### LOCATE #################################
+##################### LOCATE CHECKOUT #################################
 
     def locateBook(self, ISBN):
         sql = 'SELECT shelf, subject, '\
@@ -421,6 +423,33 @@ class Accessor:
             'FROM Book AS b WHERE ISBN = "%s";'%ISBN
         return self.query(sql)[0]
 
+    def getCopyMeta(self, ISBN, checked_out = None, hold = None,
+            future_requester = "NULL", damaged = 0):
+        terms = dict(locals())
+        terms.pop("self", None)
+        terms.pop("ISBN")
+        sql = 'SELECT (SELECT count(*) FROM Book_Copy AS c '
+        first = True
+        for param in terms:
+            if terms[param] is not None:
+                if first:
+                    sql += 'WHERE '
+                    first = False
+                else:
+                    sql += 'AND '
+                if terms[param] == "NULL":
+                    sql += 'c.%s IS NULL '%(param)
+                else:
+                    sql += 'c.%s = %s '%(param, terms[param])
+        sql += 'AND b.ISBN = c.ISBN) AS Count '\
+            'FROM Book AS b WHERE ISBN = "%s";'%ISBN
+        return self.query(sql)[0][0]
+
+    def futureRequestable(self, ISBN):
+        if self.getCopyMeta(ISBN, 0, 1) > 0 or self.getCopyMeta(ISBN, 1,0) > 0:
+            return True
+        return False
+
     def getNextAvailable(self, ISBN):
         bookData = self.selectBooks(ISBN)
         sql = 'SELECT copy_num FROM Book_Copy WHERE ISBN = "%s" '\
@@ -544,8 +573,11 @@ class Accessor:
 dis = Accessor()
 
 
-print(dis.debarred("ewbrower"))
+# print(dis.futureRequestable("0-123-81479-0"))
+# print(dis.getCopyMeta("0-123-81479-0",0,1))
+# print(dis.getCopyMeta("0-123-81479-0",1,0))
 
+print(dis.futureHoldRequest("0-123-81479-0"))
 
 
 
