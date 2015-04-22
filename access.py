@@ -318,11 +318,11 @@ class Accessor:
         return True
 
     def returned(self, issue):
-        sql = 'SELECT ISBN, copy_num FROM Issues WHERE issue_id = %s'%isssue
+        sql = 'SELECT ISBN, copy_num FROM Issues WHERE issue_id = %s'%issue
         ISBN, copy = self.query(sql)[0]
         ret = 'SELECT checked_out FROM Book_Copy WHERE '\
                 'ISBN = "%s" AND copy_num = %s'%(ISBN, copy)
-        if self.query(ret)[0][0] == 1:
+        if self.query(ret)[0][0] == 0:
             return True
         else:
             return False
@@ -600,6 +600,8 @@ class Accessor:
 
 
 dis = Accessor()
+
+
 
 
 
