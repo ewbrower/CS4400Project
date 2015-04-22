@@ -350,6 +350,11 @@ WHERE i.return_date > CURDATE()
 AND c.ISBN = "1-285-19614-7"
 ORDER BY i.return_date LIMIT 1;
 
+-- TRIGGER
+CREATE TRIGGER debar BEFORE UPDATE ON Student_Faculty FOR EACH ROW BEGIN IF NEW.penalty > 100 THEN SET NEW.debarred = 1; END IF;// END;
+
+
+
 
 
 

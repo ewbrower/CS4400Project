@@ -196,7 +196,7 @@ class Accessor:
             print("extended too many times")
             return False
         # make sure the return date is after today
-        if ans[0][3] < datetime.date.now():
+        if ans[0][3] < datetime.datetime.now():
             return False
         # make sure the book doesn't have a hold on it from anyone
         holdSQL = 'SELECT future_requester FROM Book_Copy WHERE ISBN = "%s" '\
@@ -578,6 +578,7 @@ class Accessor:
 
 
 dis = Accessor()
+
 
 
 
