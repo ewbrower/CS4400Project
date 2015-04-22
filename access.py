@@ -91,13 +91,19 @@ class Accessor:
             sql = self.searchBook(terms)
         # use the sql to get a list of ISBNs
         res = self.query(sql)
-        isbnList = []
+        totalList = []
         for item in res:
             if item[0] is not None:
-                isbnList.append(item[0])
+                totalList.append(item[0])
         # select available and unheld books based on ISBN
-        if isbnList == []:
+        if totalList == []:
             return None
+        # go through totalList and remove reserve books
+        isbnList = []
+        for isbn in totalList:
+            sql = 'SELECT reserve FROM Book WHERE ISBN = "%s"'%isbn
+            if self.query(sql)[0][0] == 0:
+                isbnList.append(isbn)
         elif len(isbnList) >= 1:
             resList = []
             for ISBN in isbnList:
