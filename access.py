@@ -91,25 +91,19 @@ class Accessor:
             sql = self.searchBook(terms)
         # use the sql to get a list of ISBNs
         res = self.query(sql)
-        totalList = []
+        isbnList = []
         for item in res:
             if item[0] is not None:
-                totalList.append(item[0])
-        # select available and unheld books based on ISBN
-        if totalList == []:
-            return None
+                isbnList.append(item[0])
         # go through totalList and remove reserve books
-        isbnList = []
-        for isbn in totalList:
-            sql = 'SELECT reserve FROM Book WHERE ISBN = "%s"'%isbn
-            if self.query(sql)[0][0] == 0:
-                isbnList.append(isbn)
-        elif len(isbnList) >= 1:
+        if len(isbnList) >= 1:
             resList = []
             for ISBN in isbnList:
                 print(self.selectBooks(ISBN))
                 resList.append(self.selectBooks(ISBN))
             return resList
+        else:
+            return None
 
     def searchAuthor(self, terms):
         sql = 'SELECT ISBN FROM Author '\
@@ -143,12 +137,12 @@ class Accessor:
             'AND c.damaged = 0 '\
             'AND b.ISBN = c.ISBN) AS Count '\
             'FROM Book AS b WHERE ISBN = "%s";'%ISBN
-        metaSQL = 'SELECT title, edition FROM Book WHERE ISBN = "%s"'%ISBN
+        metaSQL = 'SELECT title, edition, reserve FROM Book WHERE ISBN = "%s"'%ISBN
         held = self.query(heldSQL)[0]
         unheld = self.query(unheldSQL)[0]
-        title, edition = self.query(metaSQL)[0]
+        title, edition, reserve = self.query(metaSQL)[0]
         res = {"ISBN" : ISBN, "held" : held[1], "unheld" : unheld[1],
-                "title": title, "edition": edition}
+                "title": title, "edition": edition, "reserve": reserve}
         return res
 
 ####################### REQUESTS #####################################
@@ -599,7 +593,11 @@ dis = Accessor()
 
 
 
-
+# metaSQL = 'SELECT title, edition, reserve FROM Book WHERE ISBN = "0-140-44430-0"'
+# title, edition, reserve = dis.query(metaSQL)[0]
+# print(title)
+# print(edition)
+# print(reserve)
 
 
 
