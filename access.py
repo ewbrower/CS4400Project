@@ -46,10 +46,10 @@ class Accessor:
 ########## USER / PROFILE MANAGEMENT ###########
 
     def login(self, user, password):
-        sql = 'SELECT * FROM User WHERE USERNAME = "%s" AND '\
+        sql = 'SELECT count(*) FROM User WHERE USERNAME = "%s" AND '\
             'Password = "%s"'%(user,password)
-        resp = self.query(sql)
-        if len(resp) == 1:
+        resp = self.query(sql)[0][0]
+        if resp == 1:
             return True
         else:
             return False
@@ -399,12 +399,12 @@ class Accessor:
 
     def verify(self, user, table = "User"):
         # you have to insert tables first
-        sql = 'SELECT * FROM %s WHERE USERNAME = "%s"' %(table, user)
+        sql = 'SELECT count(*) FROM %s WHERE USERNAME = "%s"' %(table, user)
         # MySQL evaluates backwards, so let pymysql figure out the
         # other variables how it wants to
-        res = self.query(sql)
+        res = self.query(sql)[0][0]
         # if there is one result, the user already exists in the table
-        if len(res) == 1:
+        if res == 1:
             return True
         else:
             return False
