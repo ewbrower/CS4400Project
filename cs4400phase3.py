@@ -357,16 +357,15 @@ class Library:
         abc=self.a.holdRequest(user,booktohold)
         if type(abc)==int:
             messagebox.showinfo('Congrats!','Your hold has been placed. The issue Id is %s.'%abc)
+        elif abc=='debarred':
+            messagebox.showerror('Sorry','You have been debarred. You cannot borrow any books.')
         else:
             messagebox.showerror('Sorry','You can only place one hold per one book.')
-        ## different types of error - debarred, one hold per one book
             
     def RequestExtension(self):
         self.Menu.withdraw()
         self.RequestExtension=Toplevel()
         self.RequestExtension.title('Request extension on a book')
-
-        #need to add in the logic to check the issue ID and then unlock the text entries
         #check that issue id matches username
         Label(self.RequestExtension, text='Enter your issue_id').grid(row=2, column=0, sticky=E)
         self.issueID = StringVar()

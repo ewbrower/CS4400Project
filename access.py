@@ -474,7 +474,7 @@ class Accessor:
         if res == 1:
             return True
         else:
-            raise False
+            return False
 
     def addPenalty(self, user, amount):
         penaltySQL = 'SELECT penalty FROM Student_Faculty WHERE '\
