@@ -280,9 +280,16 @@ class Accessor:
         return dateList
 
     def getIssue(self, issue):
+        sql = 'SELECT ISBN, copy_num FROM Issues WHERE issue_id = %s'%issue
+        ISBN, copy = self.query(sql)[0]
+        secSQL = 'SELECT checked_out FROM Book_Copy WHERE ISBN = "%s" '\
+                    'AND copy_num = %s'%(ISBN,copy)
+        if self.query(secSQL)[0][0] == 1:
+            return False
         sql = 'SELECT * FROM Issues WHERE issue_id = %s'%issue
         issueList = self.query(sql)
-        print(issueList)
+        sql = 'SELECT * FROM Issues WHERE issue_id = %s'%issue
+        issueList = self.query(sql)
         return issueList
         
     def returnBook(self, issue):
