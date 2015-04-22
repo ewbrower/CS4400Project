@@ -196,7 +196,7 @@ class Accessor:
             print("extended too many times")
             return False
         # make sure the return date is after today
-        if ans[0][3] < datetime.datetime.now():
+        if ans[0][3] < datetime.date.today():
             return False
         # make sure the book doesn't have a hold on it from anyone
         holdSQL = 'SELECT future_requester FROM Book_Copy WHERE ISBN = "%s" '\
@@ -526,8 +526,10 @@ class Accessor:
         penalty = self.query(penaltySQL)[0][0]
         # solve for new penalty, convert to string
         newPen = str(float(penalty) + amount)
-        penaltySQL = 'UPDATE Student_Faculty SET penalty = %s '\
-            'WHERE username = "%s";'%(newPen, user)
+        penaltySQL = 'UPDATE Student_Faculty SET penalty = %s'%newPen
+        if newPen > 100:
+            penaltySQL += ', debarred = 1'
+        penaltySQL += ' WHERE username = "%s"'%user
         self.query(penaltySQL)
 
 ############## CRITICAL ################
