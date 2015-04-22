@@ -220,6 +220,7 @@ class Accessor:
                 'AND c.ISBN = "%s" '\
                 'ORDER BY i.return_date LIMIT 1;'%ISBN
         res = self.query(sql)
+        print(res)
         return res[0]
 
     def addFutureRequest(self, user, ISBN, copy):
@@ -579,7 +580,7 @@ dis = Accessor()
 # print(dis.getCopyMeta("0-123-81479-0",0,1))
 # print(dis.getCopyMeta("0-123-81479-0",1,0))
 
-print(dis.futureHoldRequest("0-123-81479-0"))
+print(dis.futureHoldRequest("0-136-08620-9"))
 
 
 
